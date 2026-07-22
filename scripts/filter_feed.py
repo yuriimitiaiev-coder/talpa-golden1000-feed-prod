@@ -129,14 +129,39 @@ def category_map(categories: etree._Element) -> dict[str, etree._Element]:
 
 def force_unavailable(offer: etree._Element) -> etree._Element:
     result = copy.deepcopy(offer)
+
+    # YML availability flag used by Prom.ua.
     result.set("available", "false")
 
-    # Some feeds may add quantity fields later. Force any known quantity-like
-    # fields to zero without changing the product card itself.
-    for tag in ("quantity", "quantity_in_stock", "stock_quantity", "amount"):
+    # Remove/disable any "ready to ship" marker that could conflict.
+    result.attrib.pop("in_stock", None)
+    for node in result.findall("in_stock"):
+        node.getparent().remove(node)
+
+    # IMPORTANT: Prom may keep the previous stock quantity when the tag is
+    # absent. A positive retained quantity can switch the item back to
+    # "В наявності", even when available="false". Therefore quantity_in_stock
+    # must always be present and explicitly equal to zero.
+    quantity_node = result.find("quantity_in_stock")
+    if quantity_node is None:
+        quantity_node = etree.Element("quantity_in_stock")
+        quantity_node.text = "0"
+
+        # Keep a predictable YML order: add after currencyId when possible.
+        currency_node = result.find("currencyId")
+        if currency_node is not None:
+            result.insert(result.index(currency_node) + 1, quantity_node)
+        else:
+            result.insert(0, quantity_node)
+    else:
+        quantity_node.text = "0"
+
+    # Zero any alternative quantity-like fields if they exist.
+    for tag in ("quantity", "stock_quantity", "amount"):
         node = result.find(tag)
         if node is not None:
             node.text = "0"
+
     return result
 
 
