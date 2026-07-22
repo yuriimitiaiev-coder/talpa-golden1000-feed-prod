@@ -1,0 +1,19 @@
+TALPA Golden1000 Filter — production package
+
+Required files:
+.github/workflows/publish.yml
+docs/.nojekyll
+docs/golden1000.xml
+docs/index.html
+docs/status.json
+scripts/filter_feed.py
+golden_codes.txt
+requirements.txt
+README.md
+SETUP_UA.md
+MANIFEST.txt
+.gitignore
+
+Expected Golden codes: 1000
+Expected generated offers: 1000
+Schedule: every 4 hours at minute 17 UTC
