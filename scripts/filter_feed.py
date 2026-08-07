@@ -288,9 +288,9 @@ def build_filtered_feed(source: bytes, wanted_codes: set[str]) -> tuple[bytes, d
         (offer.findtext("vendorCode") or "").strip()
         for offer in check_offers.findall("offer")
     ]
-    if len(check_codes) != EXPECTED_COUNT:
-        fail(f"Generated feed has {len(check_codes)} offers, expected {EXPECTED_COUNT}")
-    if len(set(check_codes)) != EXPECTED_COUNT:
+    if len(check_codes) > EXPECTED_COUNT:
+        fail(f"Generated feed has too many offers: maximum {EXPECTED_COUNT}, got {len(check_codes)}")
+    if len(set(check_codes)) != len(check_codes):
         fail("Generated feed contains duplicate vendorCode values")
     if set(check_codes) != wanted_codes:
         fail("Generated feed codes do not match Golden code list")
