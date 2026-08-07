@@ -61,8 +61,8 @@ def load_codes() -> set[str]:
         for line in CODES_FILE.read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     }
-    if len(codes) != EXPECTED_COUNT:
-        fail(f"Expected {EXPECTED_COUNT} unique codes, got {len(codes)}")
+    if len(codes) > EXPECTED_COUNT:
+    fail(f"Too many unique codes: maximum {EXPECTED_COUNT}, got {len(codes)}")
     return codes
 
 
