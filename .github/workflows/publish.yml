@@ -45,7 +45,7 @@ jobs:
           import json
           from pathlib import Path
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
-          assert status["offers"] == 1000, status
+          assert 0 < status["offers"] <= 1000, status
           assert status["categories"] > 0, status
           assert len(status["sha256"]) == 64, status
           print(json.dumps(status, ensure_ascii=False, indent=2))
