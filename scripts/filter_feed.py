@@ -413,10 +413,17 @@ def main() -> None:
         if ZAINSTRUMENTOM_URL
         else b""
     )
-    if zainstrumentom_source:
-        zainstrumentom_root = parse_xml(zainstrumentom_source, "Zainstrumentom")
-        _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
-            zainstrumentom_root, "Zainstrumentom"
+   if zainstrumentom_source:
+    zainstrumentom_root = parse_xml(zainstrumentom_source, "Zainstrumentom")
+    _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
+        zainstrumentom_root, "Zainstrumentom"
+    )
+
+        remap_category_ids(
+            zainstrumentom_categories,
+            zainstrumentom_offers,
+            1_000_000_000,
+            "Zainstrumentom",
         )
         print(
             f"Zainstrumentom feed OK: "
