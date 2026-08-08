@@ -330,6 +330,7 @@ def write_atomically(path: Path, data: bytes) -> None:
 def main() -> None:
     wanted_codes = load_codes()
     source = download_feed(SOURCE_URL)
+    zainstrumentom_source = download_feed(ZAINSTRUMENTOM_URL) if ZAINSTRUMENTOM_URL else b""
     xml_bytes, metadata = build_filtered_feed(source, wanted_codes)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
