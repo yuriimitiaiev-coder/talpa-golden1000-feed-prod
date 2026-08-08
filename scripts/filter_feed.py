@@ -26,6 +26,7 @@ from lxml import etree
 
 ROOT = Path(__file__).resolve().parents[1]
 CODES_FILE = ROOT / "golden_codes.txt"
+SUPPLIER_MAP_FILE = ROOT / "supplier_map.txt"
 OUTPUT_DIR = ROOT / "docs"
 OUTPUT_XML = OUTPUT_DIR / "golden1000.xml"
 STATUS_JSON = OUTPUT_DIR / "status.json"
@@ -69,6 +70,46 @@ def load_codes() -> set[str]:
     return codes
 
 
+def load_supplier_map() -> dict[str, str]:
+    if not SUPPLIER_MAP_FILE.exists():
+        return {}
+
+    result: dict[str, str] = {}
+
+    for raw_line in SUPPLIER_MAP_FILE.read_text(
+        encoding="utf-8"
+    ).splitlines():
+        line = raw_line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if "=" not in line:
+            fail(f"Invalid supplier_map line: {line!r}")
+
+        code, supplier = line.split("=", 1)
+        code = code.strip()
+        supplier = supplier.strip().upper()
+
+        if not code:
+            fail(f"Empty SKU in supplier_map: {line!r}")
+
+        if supplier not in {
+            "DROPSHIPPING",
+            "ZAINSTRUMENTOM",
+            "SIGMA",
+        }:
+            fail(
+                f"Unknown supplier {supplier!r} "
+                f"for SKU {code}"
+            )
+
+        if code in result:
+            fail(f"Duplicate SKU in supplier_map: {code}")
+
+        result[code] = supplier
+
+    return result
 def download_feed(url: str, label: str = "source") -> bytes:
     if not url:
         fail(f"{label} feed URL is empty")
