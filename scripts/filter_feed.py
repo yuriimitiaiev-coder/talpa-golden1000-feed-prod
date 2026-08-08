@@ -481,6 +481,45 @@ def main() -> None:
             f"{len(zainstrumentom_categories.findall('category'))} categories"
         )
 
+            source_root = parse_xml(source, "Dropshipping.ua")
+        _, source_categories, source_offers = get_shop_parts(
+            source_root, "Dropshipping.ua"
+        )
+
+        zainstrumentom_by_code = offer_map(
+            zainstrumentom_offers,
+            "Zainstrumentom",
+            strict_duplicates=False,
+        )
+
+        # Remove from Dropshipping.ua every SKU explicitly assigned
+        # to another supplier.
+        for offer in list(source_offers.findall("offer")):
+            code = (offer.findtext("vendorCode") or "").strip()
+            assigned_supplier = supplier_map.get(code, "DROPSHIPPING")
+
+            if assigned_supplier != "DROPSHIPPING":
+                source_offers.remove(offer)
+
+        # Add categories from Zainstrumentom. Their IDs were already
+        # remapped into a separate safe range.
+        for category in zainstrumentom_categories.findall("category"):
+            source_categories.append(copy.deepcopy(category))
+
+        # Add only SKUs explicitly assigned to Zainstrumentom.
+        for code, supplier in supplier_map.items():
+            if supplier != "ZAINSTRUMENTOM":
+                continue
+
+            offer = zainstrumentom_by_code.get(code)
+            if offer is not None:
+                source_offers.append(copy.deepcopy(offer))
+
+        source = etree.tostring(
+            source_root,
+            encoding="utf-8",
+            xml_declaration=True,
+        )
     xml_bytes, metadata = build_filtered_feed(source, wanted_codes)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
