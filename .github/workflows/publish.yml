@@ -33,6 +33,7 @@ jobs:
       - name: Build filtered XML
         env:
           SOURCE_FEED_URL: ${{ secrets.SOURCE_FEED_URL }}
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
           EXPECTED_COUNT: "1000"
           DOWNLOAD_TIMEOUT_SECONDS: "120"
         run: python scripts/filter_feed.py
