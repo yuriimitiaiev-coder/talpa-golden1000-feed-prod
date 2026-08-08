@@ -17,6 +17,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -68,22 +69,36 @@ def load_codes() -> set[str]:
     return codes
 
 
-def download_feed(url: str) -> bytes:
+def download_feed(url: str, label: str = "source") -> bytes:
     if not url:
-        fail("SOURCE_FEED_URL is empty")
+        fail(f"{label} feed URL is empty")
 
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "TALPA-Golden1000-Filter/2.0"},
     )
-    try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
-            data = response.read()
-    except Exception as exc:
-        fail(f"Cannot download source feed: {exc}")
+
+    attempts = 3
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+                data = response.read()
+            break
+        except Exception as exc:
+            if attempt == attempts:
+                fail(f"Cannot download {label} feed after {attempts} attempts: {exc}")
+
+            wait_seconds = 20 * attempt
+            print(
+                f"WARNING: Cannot download {label} feed "
+                f"(attempt {attempt}/{attempts}): {exc}. "
+                f"Retrying in {wait_seconds}s..."
+            )
+            time.sleep(wait_seconds)
 
     if len(data) < 1000:
-        fail(f"Downloaded feed is unexpectedly small: {len(data)} bytes")
+        fail(f"Downloaded {label} feed is unexpectedly small: {len(data)} bytes")
+
     return data
 
 
@@ -329,8 +344,12 @@ def write_atomically(path: Path, data: bytes) -> None:
 
 def main() -> None:
     wanted_codes = load_codes()
-    source = download_feed(SOURCE_URL)
-    zainstrumentom_source = download_feed(ZAINSTRUMENTOM_URL) if ZAINSTRUMENTOM_URL else b""
+    source = download_feed(SOURCE_URL, "Dropshipping.ua")
+    zainstrumentom_source = (
+        download_feed(ZAINSTRUMENTOM_URL, "Zainstrumentom")
+        if ZAINSTRUMENTOM_URL
+        else b""
+    )
     if zainstrumentom_source:
         zainstrumentom_root = parse_xml(zainstrumentom_source, "Zainstrumentom")
         _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
