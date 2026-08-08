@@ -331,6 +331,16 @@ def main() -> None:
     wanted_codes = load_codes()
     source = download_feed(SOURCE_URL)
     zainstrumentom_source = download_feed(ZAINSTRUMENTOM_URL) if ZAINSTRUMENTOM_URL else b""
+    if zainstrumentom_source:
+        zainstrumentom_root = parse_xml(zainstrumentom_source, "Zainstrumentom")
+        _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
+            zainstrumentom_root, "Zainstrumentom"
+        )
+        print(
+            f"Zainstrumentom feed OK: "
+            f"{len(zainstrumentom_offers.findall('offer'))} offers, "
+            f"{len(zainstrumentom_categories.findall('category'))} categories"
+        )
     xml_bytes, metadata = build_filtered_feed(source, wanted_codes)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
