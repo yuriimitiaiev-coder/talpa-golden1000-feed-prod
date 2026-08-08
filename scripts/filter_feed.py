@@ -481,7 +481,7 @@ def main() -> None:
             f"{len(zainstrumentom_categories.findall('category'))} categories"
         )
 
-            source_root = parse_xml(source, "Dropshipping.ua")
+        source_root = parse_xml(source, "Dropshipping.ua")
         _, source_categories, source_offers = get_shop_parts(
             source_root, "Dropshipping.ua"
         )
