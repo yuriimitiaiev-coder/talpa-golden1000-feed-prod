@@ -413,11 +413,14 @@ def main() -> None:
         if ZAINSTRUMENTOM_URL
         else b""
     )
-   if zainstrumentom_source:
-    zainstrumentom_root = parse_xml(zainstrumentom_source, "Zainstrumentom")
-    _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
-        zainstrumentom_root, "Zainstrumentom"
-    )
+
+    if zainstrumentom_source:
+        zainstrumentom_root = parse_xml(
+            zainstrumentom_source, "Zainstrumentom"
+        )
+        _, zainstrumentom_categories, zainstrumentom_offers = get_shop_parts(
+            zainstrumentom_root, "Zainstrumentom"
+        )
 
         remap_category_ids(
             zainstrumentom_categories,
@@ -425,11 +428,13 @@ def main() -> None:
             1_000_000_000,
             "Zainstrumentom",
         )
+
         print(
             f"Zainstrumentom feed OK: "
             f"{len(zainstrumentom_offers.findall('offer'))} offers, "
             f"{len(zainstrumentom_categories.findall('category'))} categories"
         )
+
     xml_bytes, metadata = build_filtered_feed(source, wanted_codes)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
