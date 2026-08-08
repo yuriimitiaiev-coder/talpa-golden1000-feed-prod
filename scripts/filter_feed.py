@@ -162,6 +162,51 @@ def category_map(categories: etree._Element) -> dict[str, etree._Element]:
     }
 
 
+def remap_category_ids(
+    categories: etree._Element,
+    offers: etree._Element,
+    offset: int,
+    label: str,
+) -> None:
+    mapping: dict[str, str] = {}
+
+    for category in categories.findall("category"):
+        old_id = (category.get("id") or "").strip()
+        if not old_id or not old_id.isdigit():
+            fail(f"Invalid category id in {label}: {old_id!r}")
+
+        new_id = str(int(old_id) + offset)
+        mapping[old_id] = new_id
+
+    for category in categories.findall("category"):
+        old_id = (category.get("id") or "").strip()
+        category.set("id", mapping[old_id])
+
+        parent_id = (category.get("parentId") or "").strip()
+        if parent_id:
+            if parent_id not in mapping:
+                fail(
+                    f"Unknown parent category {parent_id} "
+                    f"in {label}"
+                )
+            category.set("parentId", mapping[parent_id])
+
+    for offer in offers.findall("offer"):
+        category_node = offer.find("categoryId")
+        if category_node is None:
+            continue
+
+        old_id = (category_node.text or "").strip()
+        if not old_id:
+            continue
+
+        if old_id not in mapping:
+            fail(
+                f"Unknown offer category {old_id} "
+                f"in {label}"
+            )
+
+        category_node.text = mapping[old_id]
 def force_unavailable(offer: etree._Element) -> etree._Element:
     result = copy.deepcopy(offer)
 
