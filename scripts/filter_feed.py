@@ -31,6 +31,8 @@ STATUS_JSON = OUTPUT_DIR / "status.json"
 INDEX_HTML = OUTPUT_DIR / "index.html"
 
 SOURCE_URL = os.environ.get("SOURCE_FEED_URL", "").strip()
+ZAINSTRUMENTOM_URL = os.environ.get("ZAINSTRUMENTOM_FEED_URL", "").strip()
+SIGMA_URL = os.environ.get("SIGMA_FEED_URL", "").strip()
 EXPECTED_COUNT = int(os.environ.get("EXPECTED_COUNT", "1000"))
 TIMEOUT_SECONDS = int(os.environ.get("DOWNLOAD_TIMEOUT_SECONDS", "120"))
 MAX_FALLBACK_MISSING = int(os.environ.get("MAX_FALLBACK_MISSING", "50"))
