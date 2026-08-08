@@ -448,6 +448,11 @@ def write_atomically(path: Path, data: bytes) -> None:
 
 def main() -> None:
     wanted_codes = load_codes()
+    supplier_map = load_supplier_map()
+    print(f"Supplier map loaded: {len(supplier_map)} override(s)")
+    for code, supplier in sorted(supplier_map.items()):
+        print(f"Supplier map: {code} -> {supplier}") 
+    
     source = download_feed(SOURCE_URL, "Dropshipping.ua")
     zainstrumentom_source = (
         download_feed(ZAINSTRUMENTOM_URL, "Zainstrumentom")
