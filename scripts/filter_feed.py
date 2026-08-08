@@ -120,19 +120,37 @@ def get_shop_parts(root: etree._Element, label: str):
     return shop, categories, offers
 
 
-def offer_map(offers: etree._Element, label: str) -> dict[str, etree._Element]:
+def offer_map(
+    offers: etree._Element,
+    label: str,
+    strict_duplicates: bool = True,
+) -> dict[str, etree._Element]:
     result: dict[str, etree._Element] = {}
     duplicates: set[str] = set()
+
     for offer in offers.findall("offer"):
         code = (offer.findtext("vendorCode") or "").strip()
         if not code:
             continue
+
         if code in result:
             duplicates.add(code)
+
+            current = result[code]
+            current_available = current.get("available") == "true"
+            new_available = offer.get("available") == "true"
+
+            if new_available and not current_available:
+                result[code] = offer
         else:
             result[code] = offer
+
     if duplicates:
-        fail(f"Duplicate vendorCode values in {label}: {sorted(duplicates)[:20]}")
+        message = f"Duplicate vendorCode values in {label}: {sorted(duplicates)[:20]}"
+        if strict_duplicates:
+            fail(message)
+        print(f"WARNING: {message}")
+
     return result
 
 
