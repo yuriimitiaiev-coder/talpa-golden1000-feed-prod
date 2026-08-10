@@ -41,18 +41,29 @@ jobs:
           from lxml import etree
 
           status = json.loads(Path('docs/status.json').read_text(encoding='utf-8'))
-          assert status['offers'] == 1000, status
+          wanted_codes = {
+              line.strip()
+              for line in Path('golden_codes.txt').read_text(encoding='utf-8').splitlines()
+              if line.strip() and not line.lstrip().startswith('#')
+          }
+
+          assert status['offers'] == len(wanted_codes), status
           assert status['sigma_assigned'] == 406, status
-          assert status['sigma_overlaid'] >= 400, status
-          assert len(status['sigma_missing']) <= 6, status
+          assert status['sigma_overlaid'] == 406, status
+          assert len(status['sigma_missing']) == 0, status
+          assert status['zainstrumentom_assigned'] == 11, status
 
           root = etree.parse('docs/golden1000.xml').getroot()
           offers = root.find('shop').find('offers').findall('offer')
           codes = [(o.findtext('vendorCode') or '').strip() for o in offers]
-          assert len(codes) == 1000
-          assert len(set(codes)) == 1000
+
+          assert len(codes) == len(wanted_codes)
+          assert len(set(codes)) == len(codes)
+          assert set(codes) == wanted_codes
 
           # Critical control SKU: existing TALPA code must remain unchanged.
           assert '779535' in codes
+
           print(json.dumps(status, ensure_ascii=False, indent=2))
+          print(f'Validated {len(codes)} unique Golden SKUs against golden_codes.txt')
           PY
