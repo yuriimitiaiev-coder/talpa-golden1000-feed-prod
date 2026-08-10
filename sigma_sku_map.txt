@@ -1,0 +1,4 @@
+# SKU чинної картки TALPA = vendorCode у public XML SIGMA
+# Потрібно лише там, де B2B/Prom використовує модельний код, а XML SIGMA — числовий артикул.
+DC-1D146C=9626300
+HZ-6B143W=9791113

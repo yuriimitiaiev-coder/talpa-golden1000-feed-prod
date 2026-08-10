@@ -34,9 +34,10 @@ jobs:
         env:
           SOURCE_FEED_URL: ${{ secrets.SOURCE_FEED_URL }}
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
           EXPECTED_COUNT: "1000"
           DOWNLOAD_TIMEOUT_SECONDS: "120"
-        run: python scripts/filter_feed.py
+        run: python scripts/filter_feed_sigma_overlay.py
 
       - name: Validate generated output
         run: |
@@ -49,6 +50,9 @@ jobs:
           assert 0 < status["offers"] <= 1000, status
           assert status["categories"] > 0, status
           assert len(status["sha256"]) == 64, status
+          assert status.get("sigma_assigned") == 406, status
+          assert status.get("sigma_overlaid") >= 400, status
+          assert len(status.get("sigma_missing", [])) <= 6, status
           print(json.dumps(status, ensure_ascii=False, indent=2))
           PY
 
