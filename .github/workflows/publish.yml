@@ -52,18 +52,17 @@ jobs:
           test -s docs/golden1000.xml
           test -s docs/status.json
           python - <<'PY'
-          import csv
           import json
+          import sys
           from pathlib import Path
           from lxml import etree
 
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import load_pool
+
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
-          rows = []
-          for path in sorted(Path("pool").glob("catalog_pool_*.csv")):
-              with path.open(encoding="utf-8", newline="") as f:
-                  rows.extend(csv.DictReader(f))
-          active = [r for r in rows if (r.get("status") or "").strip().upper() == "ACTIVE"]
-          pool = [r for r in rows if (r.get("sku") or "").strip()]
+          pool = load_pool()
+          active = [r for r in pool if r["status"] == "ACTIVE"]
 
           assert 1 <= len(active) <= 1000, len(active)
           assert len(pool) <= 1000, len(pool)
@@ -77,7 +76,7 @@ jobs:
           root = etree.parse("docs/golden1000.xml").getroot()
           offers = root.find("shop").find("offers").findall("offer")
           codes = [(o.findtext("vendorCode") or "").strip() for o in offers]
-          expected = [(r.get("sku") or "").strip() for r in active]
+          expected = [r["sku"] for r in active]
           assert codes == expected
           assert len(set(codes)) == len(codes)
           assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
