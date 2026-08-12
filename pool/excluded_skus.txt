@@ -1,0 +1,11 @@
+# SKU intentionally removed from ACTIVE pool because supplier feed reports unavailable.
+# Keep here so old rows in historical pool shards are ignored without rewriting them.
+9794377
+9549350
+9549351
+9549352
+9549354
+9549355
+9555400
+9794346
+3715301
