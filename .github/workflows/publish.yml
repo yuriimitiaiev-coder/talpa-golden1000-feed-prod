@@ -1,7 +1,14 @@
-name: Build and publish Golden 1000 XML
+name: Build and publish TALPA Golden1000 controlled pool
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pool/**"
+      - "groups/**"
+      - "scripts/**"
+      - ".github/workflows/publish.yml"
   schedule:
     - cron: "17 */4 * * *"
 
@@ -30,29 +37,51 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Build filtered XML
+      - name: Build controlled feed
         env:
-          SOURCE_FEED_URL: ${{ secrets.SOURCE_FEED_URL }}
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
           SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
-          EXPECTED_COUNT: "1000"
+          PUBLISHED_FEED_URL: https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml
+          MAX_CAPACITY: "1000"
+          MAX_MISSING_ACTIVE: "25"
           DOWNLOAD_TIMEOUT_SECONDS: "120"
-        run: python scripts/filter_feed_sigma_overlay.py
+        run: python scripts/build_pool_feed.py
 
       - name: Validate generated output
         run: |
           test -s docs/golden1000.xml
           test -s docs/status.json
           python - <<'PY'
+          import csv
           import json
           from pathlib import Path
+          from lxml import etree
+
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
-          assert 0 < status["offers"] <= 1000, status
-          assert status["categories"] > 0, status
+          rows = []
+          for path in sorted(Path("pool").glob("catalog_pool_*.csv")):
+              with path.open(encoding="utf-8", newline="") as f:
+                  rows.extend(csv.DictReader(f))
+          active = [r for r in rows if (r.get("status") or "").strip().upper() == "ACTIVE"]
+          pool = [r for r in rows if (r.get("sku") or "").strip()]
+
+          assert 1 <= len(active) <= 1000, len(active)
+          assert len(pool) <= 1000, len(pool)
+          assert status["offers"] == len(active), status
+          assert status["active"] == len(active), status
+          assert status["pool_configured"] == len(pool), status
+          assert status["free_slots"] == 1000 - len(pool), status
           assert len(status["sha256"]) == 64, status
-          assert status.get("sigma_assigned") == 406, status
-          assert status.get("sigma_overlaid") >= 400, status
-          assert len(status.get("sigma_missing", [])) <= 6, status
+          assert status["supplier_missing_count"] <= 25, status
+
+          root = etree.parse("docs/golden1000.xml").getroot()
+          offers = root.find("shop").find("offers").findall("offer")
+          codes = [(o.findtext("vendorCode") or "").strip() for o in offers]
+          expected = [(r.get("sku") or "").strip() for r in active]
+          assert codes == expected
+          assert len(set(codes)) == len(codes)
+          assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
+
           print(json.dumps(status, ensure_ascii=False, indent=2))
           PY
 
