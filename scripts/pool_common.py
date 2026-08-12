@@ -15,6 +15,7 @@ OUTPUT_DIR = ROOT / "docs"
 OUTPUT_XML = OUTPUT_DIR / "golden1000.xml"
 STATUS_JSON = OUTPUT_DIR / "status.json"
 INDEX_HTML = OUTPUT_DIR / "index.html"
+EXCLUDED_SKUS_FILE = POOL_DIR / "excluded_skus.txt"
 
 MAX_CAPACITY = int(os.environ.get("MAX_CAPACITY", "1000"))
 MAX_MISSING_ACTIVE = int(os.environ.get("MAX_MISSING_ACTIVE", "25"))
@@ -95,11 +96,22 @@ def download(url: str, label: str, *, optional: bool = False) -> bytes:
     fail(f"Cannot download {label}: {last_exc}")
 
 
+def load_excluded_skus() -> set[str]:
+    if not EXCLUDED_SKUS_FILE.exists():
+        return set()
+    return {
+        line.strip()
+        for line in EXCLUDED_SKUS_FILE.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+
+
 def load_pool() -> list[dict[str, str]]:
     files = sorted(POOL_DIR.glob("catalog_pool_*.csv"))
     if not files:
         fail(f"No catalog pool files in {POOL_DIR}")
     required = {"sku", "supplier", "status", "prom_offer_id", "prom_group_id", "fallback_price"}
+    excluded = load_excluded_skus()
     rows: list[dict[str, str]] = []
     seen: set[str] = set()
     for path in files:
@@ -110,7 +122,7 @@ def load_pool() -> list[dict[str, str]]:
             for raw in reader:
                 row = {k: (v or "").strip() for k, v in raw.items()}
                 sku = row["sku"]
-                if not sku:
+                if not sku or sku in excluded:
                     continue
                 if sku in seen:
                     fail(f"Duplicate SKU in pool: {sku}")

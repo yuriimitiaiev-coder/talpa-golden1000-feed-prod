@@ -37,18 +37,16 @@ jobs:
       - name: Validate pool safety
         run: |
           python - <<'PY'
-          import csv
           import json
+          import sys
           from pathlib import Path
           from lxml import etree
 
-          rows = []
-          for path in sorted(Path("pool").glob("catalog_pool_*.csv")):
-              with path.open(encoding="utf-8", newline="") as f:
-                  rows.extend(csv.DictReader(f))
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import load_pool
 
-          active = [r for r in rows if (r.get("status") or "").strip().upper() == "ACTIVE"]
-          pool = [r for r in rows if (r.get("sku") or "").strip()]
+          pool = load_pool()
+          active = [r for r in pool if r["status"] == "ACTIVE"]
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
 
           assert len(pool) <= 1000
@@ -62,11 +60,11 @@ jobs:
           root = etree.parse("docs/golden1000.xml").getroot()
           offers = root.find("shop").find("offers").findall("offer")
           codes = [(o.findtext("vendorCode") or "").strip() for o in offers]
-          expected = [(r.get("sku") or "").strip() for r in active]
+          expected = [r["sku"] for r in active]
           assert codes == expected
           assert len(set(codes)) == len(codes)
           assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
 
           print(json.dumps(status, ensure_ascii=False, indent=2))
-          print(f"Validated controlled pool: {len(active)} ACTIVE / {1000-len(pool)} free slots")
+          print(f"Validated effective controlled pool: {len(active)} ACTIVE / {1000-len(pool)} free slots")
           PY
