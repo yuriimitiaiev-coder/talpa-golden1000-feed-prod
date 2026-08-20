@@ -37,7 +37,7 @@ def normalized_price(source: etree._Element, sku: str) -> str:
 def source_quantity(source: etree._Element, supplier: str, available: bool) -> str:
     if not available:
         return "0"
-    if supplier == "SIGMA":
+    if supplier in {"SIGMA", "TEKNOSEL"}:
         return "1"
     raw = (source.findtext("quantity_in_stock") or "").strip()
     if not raw:
@@ -167,16 +167,20 @@ def category_ids_needed(active_rows, groups) -> set[str]:
     return needed
 
 
-def build_xml(active_rows, groups, published_map, sigma_map, za_map):
+def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map):
     missing: list[str] = []
     new_structural: list[str] = []
     output_offers: list[etree._Element] = []
     seen_offer_ids: set[str] = set()
+    source_maps = {
+        "SIGMA": sigma_map,
+        "ZAINSTRUMENTOM": za_map,
+        "TEKNOSEL": teknosel_map,
+    }
 
     for row in active_rows:
         sku = row["sku"]
-        source_map = sigma_map if row["supplier"] == "SIGMA" else za_map
-        source = source_map.get(sku)
+        source = source_maps[row["supplier"]].get(sku)
         previous = build_controller_offer(row) if row["prom_offer_id"] else published_map.get(sku)
 
         if source is None:
@@ -245,6 +249,7 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map):
         "active": len(active_rows),
         "sigma_active": sum(r["supplier"] == "SIGMA" for r in active_rows),
         "zainstrumentom_active": sum(r["supplier"] == "ZAINSTRUMENTOM" for r in active_rows),
+        "teknosel_active": sum(r["supplier"] == "TEKNOSEL" for r in active_rows),
         "supplier_missing_active": sorted(missing),
         "supplier_missing_count": len(missing),
         "new_structural_cards": sorted(new_structural),
