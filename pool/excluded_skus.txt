@@ -1,4 +1,4 @@
-# SKU intentionally removed from ACTIVE pool because supplier feed reports unavailable.
+# SKU intentionally removed from ACTIVE pool.
 # Keep here so old rows in historical pool shards are ignored without rewriting them.
 9794377
 9549350
@@ -9,3 +9,5 @@
 9555400
 9794346
 3715301
+1207-2062
+1108-0867
