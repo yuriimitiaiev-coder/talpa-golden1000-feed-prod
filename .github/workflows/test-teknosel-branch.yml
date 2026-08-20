@@ -1,0 +1,89 @@
+name: Test TEKNOSEL branch
+
+on:
+  push:
+    branches:
+      - replace-2-with-teknosel-2026-08-20
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Build controlled feed
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          PUBLISHED_FEED_URL: https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml
+          MAX_CAPACITY: "1000"
+          MAX_MISSING_ACTIVE: "25"
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: python scripts/build_pool_feed.py
+
+      - name: Validate exact replacement
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          from lxml import etree
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import load_pool
+
+          pool = load_pool()
+          active = [r for r in pool if r["status"] == "ACTIVE"]
+          assert len(active) == 950, len(active)
+          assert len({r["sku"] for r in active}) == 950
+
+          status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
+          assert status["offers"] == 950, status
+          assert status["active"] == 950, status
+          assert status["teknosel_active"] == 2, status
+          assert status["supplier_missing_count"] <= 25, status
+          assert "2033017351" not in status["supplier_missing_active"], status
+          assert "2122321414" not in status["supplier_missing_active"], status
+
+          root = etree.parse("docs/golden1000.xml").getroot()
+          offers = root.find("shop").find("offers").findall("offer")
+          by_sku = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
+          assert len(by_sku) == 950
+          assert "1207-2062" not in by_sku
+          assert "1108-0867" not in by_sku
+
+          expected = {
+              "2033017351": ("798.00", "906"),
+              "2122321414": ("834.00", "907"),
+          }
+          for sku, (price, group_id) in expected.items():
+              offer = by_sku[sku]
+              assert (offer.findtext("price") or "").strip() == price
+              assert (offer.findtext("categoryId") or "").strip() == group_id
+              assert offer.get("available") == "true"
+              assert (offer.findtext("quantity_in_stock") or "").strip() == "1"
+
+          print(json.dumps({
+              "result": "PASS",
+              "active": 950,
+              "unique_sku": 950,
+              "teknosel_active": 2,
+              "old_absent": ["1207-2062", "1108-0867"],
+              "new_present": ["2033017351", "2122321414"],
+              "supplier_missing_count": status["supplier_missing_count"],
+          }, ensure_ascii=False, indent=2))
+          PY
