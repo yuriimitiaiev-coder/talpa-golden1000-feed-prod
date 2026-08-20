@@ -25,12 +25,14 @@ SIGMA_URL = os.environ.get(
     "https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php",
 ).strip()
 ZA_URL = os.environ.get("ZAINSTRUMENTOM_FEED_URL", "").strip()
+TEKNOSEL_URL = os.environ.get("TEKNOSEL_FEED_URL", "").strip()
 PUBLISHED_FEED_URL = os.environ.get(
     "PUBLISHED_FEED_URL",
     "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml",
 ).strip()
-ALLOWED_SUPPLIERS = {"SIGMA", "ZAINSTRUMENTOM"}
+ALLOWED_SUPPLIERS = {"SIGMA", "ZAINSTRUMENTOM", "TEKNOSEL"}
 ALLOWED_STATUSES = {"ACTIVE", "RESERVE"}
+GOOGLE_NS = "http://base.google.com/ns/1.0"
 
 
 def fail(message: str) -> None:
@@ -186,6 +188,46 @@ def supplier_offer_map(data: bytes, label: str) -> dict[str, etree._Element]:
             previous.get("available") != "true" and offer.get("available") == "true"
         ):
             result[sku] = offer
+    return result
+
+
+def google_merchant_offer_map(data: bytes, label: str) -> dict[str, etree._Element]:
+    root = parse_xml(data, label)
+    channel = root.find("channel")
+    if channel is None:
+        fail(f"{label} XML has no <channel>")
+    items = channel.findall("item")
+    if len(items) < 2:
+        fail(f"{label} feed has too few items: {len(items)}")
+
+    g = f"{{{GOOGLE_NS}}}"
+    result: dict[str, etree._Element] = {}
+    for item in items:
+        sku = (item.findtext(f"{g}id") or "").strip()
+        if not sku:
+            continue
+        availability = (item.findtext(f"{g}availability") or "").strip().lower()
+        price_raw = (item.findtext(f"{g}price") or "").strip()
+        price = price_raw.split()[0].replace(",", ".") if price_raw else ""
+        if not price:
+            continue
+
+        available = availability == "in stock"
+        offer = etree.Element("offer", id=sku, available="true" if available else "false")
+        etree.SubElement(offer, "price").text = price
+        etree.SubElement(offer, "currencyId").text = "UAH"
+        etree.SubElement(offer, "quantity_in_stock").text = "1" if available else "0"
+        etree.SubElement(offer, "vendorCode").text = sku
+
+        title = (item.findtext(f"{g}title") or "").strip()
+        if title:
+            etree.SubElement(offer, "name").text = title
+            etree.SubElement(offer, "name_ua").text = title
+        brand = (item.findtext(f"{g}brand") or "").strip()
+        if brand:
+            etree.SubElement(offer, "vendor").text = brand
+
+        result[sku] = offer
     return result
 
 
