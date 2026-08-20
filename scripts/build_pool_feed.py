@@ -78,6 +78,7 @@ def main() -> None:
 <p>SKU без актуального запису постачальника: {metadata['supplier_missing_count']}</p>
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
+<p><a href="status.json">status.json</a></p>
 </body>
 </html>
 """,
