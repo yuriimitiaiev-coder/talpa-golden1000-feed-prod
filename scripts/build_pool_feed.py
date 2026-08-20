@@ -13,9 +13,11 @@ from pool_common import (
     PUBLISHED_FEED_URL,
     SIGMA_URL,
     STATUS_JSON,
+    TEKNOSEL_URL,
     ZA_URL,
     download,
     feed_offer_map,
+    google_merchant_offer_map,
     load_groups,
     load_pool,
     supplier_offer_map,
@@ -41,8 +43,16 @@ def main() -> None:
     published_map = feed_offer_map(published_data, "published feed") if published_data else {}
     sigma_map = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
     za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
+    teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
 
-    xml_bytes, metadata = build_xml(active_rows, groups, published_map, sigma_map, za_map)
+    xml_bytes, metadata = build_xml(
+        active_rows,
+        groups,
+        published_map,
+        sigma_map,
+        za_map,
+        teknosel_map,
+    )
     metadata.update(
         {
             "pool_configured": len(pool),
@@ -68,7 +78,6 @@ def main() -> None:
 <p>SKU без актуального запису постачальника: {metadata['supplier_missing_count']}</p>
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
-<p><a href="status.json">status.json</a></p>
 </body>
 </html>
 """,
