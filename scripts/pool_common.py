@@ -27,7 +27,7 @@ SIGMA_URL = os.environ.get(
 ZA_URL = os.environ.get("ZAINSTRUMENTOM_FEED_URL", "").strip()
 TEKNOSEL_URL = os.environ.get("TEKNOSEL_FEED_URL", "").strip()
 GRAND_URL = os.environ.get("GRANDINSTRUMENT_FEED_URL", "").strip()
-GPL_SOURCE_FILE = ROOT / "sources" / "gpl_selected.xml"
+GPL_URL = os.environ.get("GPL_FEED_URL", "").strip()
 PUBLISHED_FEED_URL = os.environ.get(
     "PUBLISHED_FEED_URL",
     "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml",
@@ -229,6 +229,64 @@ def google_merchant_offer_map(data: bytes, label: str) -> dict[str, etree._Eleme
         if brand:
             etree.SubElement(offer, "vendor").text = brand
 
+        result[sku] = offer
+    return result
+
+
+def gpl_offer_map(data: bytes, label: str) -> dict[str, etree._Element]:
+    root = parse_xml(data, label)
+    channel = root.find("channel")
+    if channel is None:
+        fail(f"{label} XML has no <channel>")
+    items = channel.findall("item")
+    if not items:
+        fail(f"{label} feed contains no items")
+
+    result: dict[str, etree._Element] = {}
+    for item in items:
+        sku = (item.findtext("article") or "").strip()
+        purchase_price = (item.findtext("price_type_1") or "").strip().replace(",", ".")
+        if not sku or not purchase_price:
+            continue
+        try:
+            if float(purchase_price) <= 0:
+                continue
+        except ValueError:
+            continue
+
+        quantity = 0
+        for tag in ("warehouse_1", "warehouse_2", "warehouse_4", "warehouse_6"):
+            raw = (item.findtext(tag) or "").strip()
+            if not raw:
+                continue
+            if raw.startswith(">"):
+                raw = raw[1:].strip()
+                try:
+                    quantity += int(float(raw)) + 1
+                except ValueError:
+                    pass
+                continue
+            try:
+                quantity += max(int(float(raw.replace(",", "."))), 0)
+            except ValueError:
+                pass
+
+        offer = etree.Element("offer", id=sku, available="true" if quantity > 0 else "false")
+        etree.SubElement(offer, "price").text = purchase_price
+        etree.SubElement(offer, "supplier_price").text = purchase_price
+        etree.SubElement(offer, "currencyId").text = "UAH"
+        etree.SubElement(offer, "quantity_in_stock").text = str(quantity)
+        etree.SubElement(offer, "vendorCode").text = sku
+
+        name = (item.findtext("name") or sku).strip()
+        etree.SubElement(offer, "name").text = name
+        etree.SubElement(offer, "name_ua").text = name
+        brand = (item.findtext("tecdoc_group") or "").strip()
+        if brand:
+            etree.SubElement(offer, "vendor").text = brand
+        image = (item.findtext("image") or "").strip()
+        if image:
+            etree.SubElement(offer, "picture").text = image
         result[sku] = offer
     return result
 
