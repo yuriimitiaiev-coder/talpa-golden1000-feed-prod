@@ -36,14 +36,14 @@ def normalized_price(source: etree._Element, sku: str) -> str:
 
 def effective_selling_price(source: etree._Element, row: dict[str, str]) -> str:
     sku = row["sku"]
-    if row["supplier"] == "GRANDINSTRUMENT":
+    if row["supplier"] in {"GRANDINSTRUMENT", "GPL"}:
         raw = row["fallback_price"].replace(",", ".").strip()
         try:
             value = float(raw)
         except Exception:
-            fail(f"Invalid controlled Grand selling price for {sku}: {raw!r}")
+            fail(f"Invalid controlled selling price for {sku}: {raw!r}")
         if value <= 0:
-            fail(f"Non-positive controlled Grand selling price for {sku}: {raw!r}")
+            fail(f"Non-positive controlled selling price for {sku}: {raw!r}")
         return raw
     return normalized_price(source, sku)
 
@@ -84,7 +84,7 @@ def build_new_structural_offer(source: etree._Element, row: dict[str, str]) -> e
     out = etree.Element("offer", id=offer_id)
     for tag in (
         "url", "picture", "name", "name_ua", "vendor",
-        "description", "description_ua", "country_of_origin", "param",
+        "description", "description_ua", "country_of_origin", "portal_category_url", "param",
     ):
         nodes = source.findall(tag)
         if tag == "picture":
@@ -181,7 +181,7 @@ def category_ids_needed(active_rows, groups) -> set[str]:
     return needed
 
 
-def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map, grand_map):
+def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map, grand_map, gpl_map):
     missing: list[str] = []
     new_structural: list[str] = []
     output_offers: list[etree._Element] = []
@@ -191,6 +191,7 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "ZAINSTRUMENTOM": za_map,
         "TEKNOSEL": teknosel_map,
         "GRANDINSTRUMENT": grand_map,
+        "GPL": gpl_map,
     }
 
     for row in active_rows:
@@ -266,6 +267,7 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "zainstrumentom_active": sum(r["supplier"] == "ZAINSTRUMENTOM" for r in active_rows),
         "teknosel_active": sum(r["supplier"] == "TEKNOSEL" for r in active_rows),
         "grandinstrument_active": sum(r["supplier"] == "GRANDINSTRUMENT" for r in active_rows),
+        "gpl_active": sum(r["supplier"] == "GPL" for r in active_rows),
         "supplier_missing_active": sorted(missing),
         "supplier_missing_count": len(missing),
         "new_structural_cards": sorted(new_structural),

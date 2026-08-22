@@ -11,7 +11,7 @@
 
 Поля:
 - `sku` — артикул TALPA;
-- `supplier` — `SIGMA` або `ZAINSTRUMENTOM`;
+- `supplier` — `SIGMA`, `ZAINSTRUMENTOM`, `TEKNOSEL`, `GRANDINSTRUMENT` або `GPL`;
 - `status` — `ACTIVE` або `RESERVE`;
 - `prom_offer_id` — стабільний ID позиції Prom; для вже існуючих 950 він зафіксований із фінального експорту;
 - `prom_group_id` — ідентифікатор існуючої групи TALPA;
@@ -37,6 +37,7 @@
 
 SIGMA не передає окремий залишок, тому для SIGMA використовується `1` при `available=true` і `0` при `available=false`.
 ZaInstrumentom передає `quantity_in_stock`, і воно використовується напряму.
+Для чотирьох погоджених GPL-карток використовується контрольований статичний snapshot `sources/gpl_selected.xml`; продажні ціни зафіксовані у пулі до наступного окремого перегляду GPL.
 
 Назви, групи та ID чинних 950 карток зафіксовані з фінального експорту Prom від 12.08.2026.
 
