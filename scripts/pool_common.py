@@ -26,11 +26,12 @@ SIGMA_URL = os.environ.get(
 ).strip()
 ZA_URL = os.environ.get("ZAINSTRUMENTOM_FEED_URL", "").strip()
 TEKNOSEL_URL = os.environ.get("TEKNOSEL_FEED_URL", "").strip()
+GRAND_URL = os.environ.get("GRANDINSTRUMENT_FEED_URL", "").strip()
 PUBLISHED_FEED_URL = os.environ.get(
     "PUBLISHED_FEED_URL",
     "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml",
 ).strip()
-ALLOWED_SUPPLIERS = {"SIGMA", "ZAINSTRUMENTOM", "TEKNOSEL"}
+ALLOWED_SUPPLIERS = {"SIGMA", "ZAINSTRUMENTOM", "TEKNOSEL", "GRANDINSTRUMENT"}
 ALLOWED_STATUSES = {"ACTIVE", "RESERVE"}
 GOOGLE_NS = "http://base.google.com/ns/1.0"
 
