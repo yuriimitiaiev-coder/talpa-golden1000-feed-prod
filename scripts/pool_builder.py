@@ -34,6 +34,20 @@ def normalized_price(source: etree._Element, sku: str) -> str:
     return raw
 
 
+def effective_selling_price(source: etree._Element, row: dict[str, str]) -> str:
+    sku = row["sku"]
+    if row["supplier"] == "GRANDINSTRUMENT":
+        raw = row["fallback_price"].replace(",", ".").strip()
+        try:
+            value = float(raw)
+        except Exception:
+            fail(f"Invalid controlled Grand selling price for {sku}: {raw!r}")
+        if value <= 0:
+            fail(f"Non-positive controlled Grand selling price for {sku}: {raw!r}")
+        return raw
+    return normalized_price(source, sku)
+
+
 def source_quantity(source: etree._Element, supplier: str, available: bool) -> str:
     if not available:
         return "0"
@@ -138,7 +152,7 @@ def overlay_commercial(base: etree._Element, source: etree._Element, row: dict[s
     out.set("available", "true" if available else "false")
     out.attrib.pop("in_stock", None)
     remove_children(out, ("oldprice", "discount", "in_stock"))
-    set_child_text(out, "price", normalized_price(source, sku))
+    set_child_text(out, "price", effective_selling_price(source, row))
     set_child_text(out, "currencyId", (source.findtext("currencyId") or "UAH").strip() or "UAH")
     q = source_quantity(source, supplier, available)
     set_child_text(out, "quantity_in_stock", q)
@@ -167,7 +181,7 @@ def category_ids_needed(active_rows, groups) -> set[str]:
     return needed
 
 
-def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map):
+def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map, grand_map):
     missing: list[str] = []
     new_structural: list[str] = []
     output_offers: list[etree._Element] = []
@@ -176,6 +190,7 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "SIGMA": sigma_map,
         "ZAINSTRUMENTOM": za_map,
         "TEKNOSEL": teknosel_map,
+        "GRANDINSTRUMENT": grand_map,
     }
 
     for row in active_rows:
@@ -250,6 +265,7 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "sigma_active": sum(r["supplier"] == "SIGMA" for r in active_rows),
         "zainstrumentom_active": sum(r["supplier"] == "ZAINSTRUMENTOM" for r in active_rows),
         "teknosel_active": sum(r["supplier"] == "TEKNOSEL" for r in active_rows),
+        "grandinstrument_active": sum(r["supplier"] == "GRANDINSTRUMENT" for r in active_rows),
         "supplier_missing_active": sorted(missing),
         "supplier_missing_count": len(missing),
         "new_structural_cards": sorted(new_structural),
