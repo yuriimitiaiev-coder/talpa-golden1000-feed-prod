@@ -6,6 +6,7 @@ import os
 import tempfile
 
 from pool_common import (
+    GRAND_URL,
     INDEX_HTML,
     MAX_CAPACITY,
     OUTPUT_DIR,
@@ -44,6 +45,7 @@ def main() -> None:
     sigma_map = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
     za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
+    grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
 
     xml_bytes, metadata = build_xml(
         active_rows,
@@ -52,6 +54,7 @@ def main() -> None:
         sigma_map,
         za_map,
         teknosel_map,
+        grand_map,
     )
     metadata.update(
         {
