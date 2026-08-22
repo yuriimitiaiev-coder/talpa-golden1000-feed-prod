@@ -8,6 +8,14 @@ from lxml import etree
 from pool_common import MAX_CAPACITY, MAX_MISSING_ACTIVE, fail, get_shop_parts, parse_xml
 
 
+GPL_ECONOM_POLICY = {
+    "130502": {"commission_rate": 0.0785, "min_net": 80.0},
+    "VI0331": {"commission_rate": 0.0763, "min_net": 80.0},
+    "260809": {"commission_rate": 0.0746, "min_net": 80.0},
+    "590017": {"commission_rate": 0.07755, "min_net": 80.0},
+}
+
+
 def set_child_text(parent: etree._Element, tag: str, value: str) -> etree._Element:
     node = parent.find(tag)
     if node is None:
@@ -149,6 +157,23 @@ def overlay_commercial(base: etree._Element, source: etree._Element, row: dict[s
     if group_id:
         set_child_text(out, "categoryId", group_id)
     available = source.get("available") == "true"
+    if supplier == "GPL" and available:
+        policy = GPL_ECONOM_POLICY.get(sku)
+        if policy is None:
+            fail(f"GPL SKU {sku} has no Econom safety policy")
+        purchase_raw = (source.findtext("supplier_price") or "").strip().replace(",", ".")
+        try:
+            purchase_price = float(purchase_raw)
+            selling_price = float(effective_selling_price(source, row))
+        except ValueError:
+            fail(f"Invalid GPL margin inputs for {sku}")
+        net = selling_price - purchase_price - selling_price * policy["commission_rate"]
+        if net < policy["min_net"]:
+            print(
+                f"WARNING: GPL SKU {sku} disabled by margin guard: "
+                f"selling={selling_price:.2f}, purchase={purchase_price:.2f}, net={net:.2f}"
+            )
+            available = False
     out.set("available", "true" if available else "false")
     out.attrib.pop("in_stock", None)
     remove_children(out, ("oldprice", "discount", "in_stock"))

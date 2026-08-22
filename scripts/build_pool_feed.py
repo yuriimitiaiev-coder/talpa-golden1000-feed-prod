@@ -8,7 +8,7 @@ import tempfile
 from content_patches import patch_grand_content, validate_grand_output
 from pool_common import (
     GRAND_URL,
-    GPL_SOURCE_FILE,
+    GPL_URL,
     INDEX_HTML,
     MAX_CAPACITY,
     OUTPUT_DIR,
@@ -21,6 +21,7 @@ from pool_common import (
     download,
     feed_offer_map,
     google_merchant_offer_map,
+    gpl_offer_map,
     load_groups,
     load_pool,
     supplier_offer_map,
@@ -48,7 +49,7 @@ def main() -> None:
     za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
     grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
-    gpl_map = feed_offer_map(GPL_SOURCE_FILE.read_bytes(), "GPL selected snapshot")
+    gpl_map = gpl_offer_map(download(GPL_URL, "GPL"), "GPL")
 
     # TALPA only patches two verified supplier-content defects. All other content remains untouched.
     patch_grand_content(published_map)
