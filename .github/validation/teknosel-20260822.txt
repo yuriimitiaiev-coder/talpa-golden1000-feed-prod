@@ -1,0 +1,1 @@
+Temporary validation trigger for TEKNOSEL workflow after TEKNOSEL_FEED_URL secret wiring fix.
