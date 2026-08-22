@@ -1,3 +1,4 @@
+# Production republish trigger after TEKNOSEL validation 2026-08-22
 name: Build and publish TALPA Golden1000 controlled pool
 
 on:
