@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 
+from content_patches import patch_grand_content, validate_grand_output
 from pool_common import (
     GRAND_URL,
     INDEX_HTML,
@@ -47,6 +48,10 @@ def main() -> None:
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
     grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
 
+    # TALPA only patches two verified supplier-content defects. All other content remains untouched.
+    patch_grand_content(published_map)
+    patch_grand_content(grand_map)
+
     xml_bytes, metadata = build_xml(
         active_rows,
         groups,
@@ -56,6 +61,8 @@ def main() -> None:
         teknosel_map,
         grand_map,
     )
+    validate_grand_output(xml_bytes)
+
     metadata.update(
         {
             "pool_configured": len(pool),
