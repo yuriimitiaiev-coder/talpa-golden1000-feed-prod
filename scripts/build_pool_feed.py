@@ -6,6 +6,7 @@ import os
 import tempfile
 
 from content_patches import patch_grand_content, validate_grand_output
+from price_guard import normalize_zainstrumentom_promotions
 from pool_common import (
     GRAND_URL,
     GPL_URL,
@@ -47,11 +48,13 @@ def main() -> None:
     published_map = feed_offer_map(published_data, "published feed") if published_data else {}
     sigma_map = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
     za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
+    za_promo_adjustments = normalize_zainstrumentom_promotions(za_map)
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
     grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
     gpl_map = gpl_offer_map(download(GPL_URL, "GPL"), "GPL")
 
-    # TALPA only patches two verified supplier-content defects. All other content remains untouched.
+    # TALPA only patches verified supplier-content defects. Price guarding for
+    # ZaInstrumentom is handled separately above and affects commercial fields only.
     patch_grand_content(published_map)
     patch_grand_content(grand_map)
 
@@ -73,6 +76,8 @@ def main() -> None:
             "reserve_configured": len(reserve_rows),
             "free_slots": MAX_CAPACITY - len(pool),
             "active_headroom": MAX_CAPACITY - len(active_rows),
+            "zainstrumentom_promotions_guarded": len(za_promo_adjustments),
+            "zainstrumentom_promotion_adjustments": za_promo_adjustments,
         }
     )
 
@@ -90,6 +95,7 @@ def main() -> None:
 <p>RESERVE у файлі: {metadata['reserve_configured']}</p>
 <p>Вільних місць у пулі: {metadata['free_slots']}</p>
 <p>SKU без актуального запису постачальника: {metadata['supplier_missing_count']}</p>
+<p>Акцій ZaInstrumentom захищено: {metadata['zainstrumentom_promotions_guarded']}</p>
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
