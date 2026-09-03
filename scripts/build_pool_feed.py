@@ -53,6 +53,23 @@ def main() -> None:
     grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
     gpl_map = gpl_offer_map(download(GPL_URL, "GPL"), "GPL")
 
+    source_maps = {
+        "SIGMA": sigma_map,
+        "ZAINSTRUMENTOM": za_map,
+        "TEKNOSEL": teknosel_map,
+        "GRANDINSTRUMENT": grand_map,
+        "GPL": gpl_map,
+    }
+    unresolved = [
+        r["sku"]
+        for r in active_rows
+        if source_maps[r["supplier"]].get(r["sku"]) is None
+        and not r["prom_offer_id"]
+        and r["sku"] not in published_map
+    ]
+    if unresolved:
+        print("UNRESOLVED_ACTIVE_NO_FALLBACK=" + ",".join(unresolved))
+
     # TALPA only patches verified supplier-content defects. Price guarding for
     # ZaInstrumentom is handled separately above and affects commercial fields only.
     patch_grand_content(published_map)
