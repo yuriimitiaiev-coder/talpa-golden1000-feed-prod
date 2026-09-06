@@ -56,6 +56,7 @@ jobs:
         run: |
           test -s docs/golden1000.xml
           test -s docs/status.json
+          test -s docs/kit_price_snapshot.json
           python - <<'PY'
           import json
           import sys
@@ -66,6 +67,7 @@ jobs:
           from pool_common import load_pool
 
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
+          snapshot = json.loads(Path("docs/kit_price_snapshot.json").read_text(encoding="utf-8"))
           pool = load_pool()
           active = [r for r in pool if r["status"] == "ACTIVE"]
 
@@ -86,7 +88,32 @@ jobs:
           assert len(set(codes)) == len(codes)
           assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
 
+          assert snapshot["schema_version"] == 1, snapshot
+          assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
+          assert snapshot["configured_sku_count"] == 99, snapshot
+          assert len(snapshot["items"]) == 99, snapshot
+          assert snapshot["counts_by_partner"] == {
+              "GRANDINSTRUMENT": 36,
+              "SIGMA": 37,
+              "ZAINSTRUMENTOM": 26,
+          }, snapshot
+          snapshot_keys = [
+              (item["partner"], item["sku"])
+              for item in snapshot["items"]
+          ]
+          assert len(set(snapshot_keys)) == 99, snapshot_keys
+          assert snapshot["found_count"] + snapshot["missing_count"] == 99, snapshot
+
           print(json.dumps(status, ensure_ascii=False, indent=2))
+          print(json.dumps({
+              "kit_price_snapshot": {
+                  "configured_sku_count": snapshot["configured_sku_count"],
+                  "found_count": snapshot["found_count"],
+                  "missing_count": snapshot["missing_count"],
+                  "available_count": snapshot["available_count"],
+                  "found_by_partner": snapshot["found_by_partner"],
+              }
+          }, ensure_ascii=False, indent=2))
           PY
 
       - name: Configure GitHub Pages
@@ -105,6 +132,6 @@ jobs:
     timeout-minutes: 10
     needs: build
     steps:
-      - name: Deploy GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

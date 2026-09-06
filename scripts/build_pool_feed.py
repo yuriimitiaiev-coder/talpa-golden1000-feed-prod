@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 
+from build_kit_price_snapshot import write_kit_price_snapshot
 from content_patches import patch_grand_content, validate_grand_output
 from price_guard import normalize_zainstrumentom_promotions
 from pool_common import (
@@ -100,7 +101,21 @@ def main() -> None:
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     write_atomically(OUTPUT_XML, xml_bytes)
-    STATUS_JSON.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    STATUS_JSON.write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    # Stage 3 B2B: build a compact RRP/availability snapshot for the 99 unique
+    # SKU used by frozen TALPA KIT-01…06. This reuses the same already-downloaded
+    # supplier maps; it does not change Golden1000 commercial logic.
+    write_kit_price_snapshot(
+        sigma_map=sigma_map,
+        za_map=za_map,
+        grand_map=grand_map,
+        za_adjustments=za_promo_adjustments,
+    )
+
     INDEX_HTML.write_text(
         f"""<!doctype html>
 <html lang="uk">
@@ -116,6 +131,7 @@ def main() -> None:
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
+<p><a href="kit_price_snapshot.json">kit_price_snapshot.json</a></p>
 </body>
 </html>
 """,
