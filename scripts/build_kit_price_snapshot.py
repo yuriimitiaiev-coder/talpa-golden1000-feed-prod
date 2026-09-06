@@ -6,15 +6,6 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pool_common import (
-    GRAND_URL,
-    SIGMA_URL,
-    ZA_URL,
-    download,
-    supplier_offer_map,
-)
-from price_guard import normalize_zainstrumentom_promotions
-
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_CSV = ROOT / "sources" / "kit_pricing_skus.csv"
 OUTPUT_JSON = ROOT / "docs" / "kit_price_snapshot.json"
@@ -51,8 +42,6 @@ def load_targets() -> list[dict[str, str]]:
         for raw in reader:
             partner = (raw.get("partner") or "").strip().upper()
             sku = (raw.get("sku") or "").strip()
-            name = ""
-            kits = ""
 
             if not partner or not sku:
                 continue
@@ -62,14 +51,7 @@ def load_targets() -> list[dict[str, str]]:
             if key in seen:
                 raise SystemExit(f"Duplicate KIT pricing target: {partner}/{sku}")
             seen.add(key)
-            targets.append(
-                {
-                    "partner": partner,
-                    "sku": sku,
-                    "name": name,
-                    "kits": kits,
-                }
-            )
+            targets.append({"partner": partner, "sku": sku})
 
     if not targets:
         raise SystemExit("KIT pricing target list is empty")
@@ -88,21 +70,20 @@ def quantity_for(source, partner: str, available: bool) -> int:
         except ValueError:
             pass
 
-    # SIGMA and some Grand Instrument feed rows expose availability without
-    # a machine-readable numeric stock. One means "available, exact qty unknown".
+    # Some feeds expose only availability, not an exact numeric stock.
+    # 1 means "available; exact quantity is not machine-readable".
     return 1
 
 
-def main() -> None:
+def write_kit_price_snapshot(
+    sigma_map,
+    za_map,
+    grand_map,
+    za_adjustments: list[dict[str, str]] | None = None,
+) -> dict[str, object]:
     targets = load_targets()
-
-    sigma_map = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
-    za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
-    za_adjustments = normalize_zainstrumentom_promotions(za_map)
+    za_adjustments = za_adjustments or []
     za_adjusted = {item["sku"] for item in za_adjustments}
-    grand_map = supplier_offer_map(
-        download(GRAND_URL, "Grand Instrument"), "Grand Instrument"
-    )
 
     maps = {
         "SIGMA": sigma_map,
@@ -174,7 +155,7 @@ def main() -> None:
         for partner in sorted(SUPPORTED_PARTNERS)
     }
 
-    payload = {
+    payload: dict[str, object] = {
         "schema_version": 1,
         "source_master": "TALPA_KIT_MASTER_FINAL_v1_0",
         "generated_at_utc": generated_at,
@@ -195,20 +176,19 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(json.dumps(
-        {
-            "configured_sku_count": payload["configured_sku_count"],
-            "found_count": payload["found_count"],
-            "missing_count": payload["missing_count"],
-            "available_count": payload["available_count"],
-            "counts_by_partner": counts_by_partner,
-            "found_by_partner": found_by_partner,
-            "zainstrumentom_promotions_normalized": len(za_adjustments),
-        },
-        ensure_ascii=False,
-        indent=2,
-    ))
-
-
-if __name__ == "__main__":
-    main()
+    print(
+        "KIT_PRICE_SNAPSHOT="
+        + json.dumps(
+            {
+                "configured_sku_count": payload["configured_sku_count"],
+                "found_count": payload["found_count"],
+                "missing_count": payload["missing_count"],
+                "available_count": payload["available_count"],
+                "counts_by_partner": counts_by_partner,
+                "found_by_partner": found_by_partner,
+                "zainstrumentom_promotions_normalized": len(za_adjustments),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return payload
