@@ -6,7 +6,7 @@ primary_master_sku,master_supplier,live_coverage,coverage_mode,status,as_of,note
 1719691,SIGMA,,HOLD,HOLD,2026-09-08,"No confirmed live exact substitute"
 20039,ZAINSTRUMENTOM,RM 418 1800,LIVE_SUBSTITUTE_CONDITIONAL,ACTIVE,2026-09-08,"Live-feed-confirmed Linzer paint tray 18 in / 45 cm instead of 300 mm Rollingdog tray"
 50478,ZAINSTRUMENTOM,1105-0349,EXISTING_LIVE_CONDITIONAL,ACTIVE,2026-09-08,"Scraping function covered; not all original 10-in-1 functions"
-8316755,SIGMA,8316735,LIVE_SUBSTITUTE_CONDITIONAL,ACTIVE,2026-09-08,"Plastic bucket 12 l instead of 16 l; live feed confirmed 2026-09-08"
+8316755,SIGMA,20101,EXISTING_LIVE_CONDITIONAL,ACTIVE,2026-09-08,"Bucket function covered by existing live Rollingdog 38 l bucket; attempted 8316735 was rejected by run 265 availability acceptance"
 9419111,SIGMA,9417491,MASTER_DUPLICATE,ACTIVE,2026-09-08,"P2 prefilter function already included in MASTER 9417491"
 EHF0500,GRANDINSTRUMENT,4316051,LIVE_SUBSTITUTE,ACTIVE,2026-09-08,"500 g locksmith hammer; live feed confirmed"
 HSP0300,GRANDINSTRUMENT,105900,EXISTING_LIVE,ACTIVE,2026-09-08,"Metal hacksaw function covered by live TAKAGI 105900"

@@ -87,3 +87,6 @@ VI0331
 1101-2002
 1207-2064
 4316351
+# MASTER replacement candidates rejected by live availability acceptance — 08.09.2026
+8316735
+7411832
