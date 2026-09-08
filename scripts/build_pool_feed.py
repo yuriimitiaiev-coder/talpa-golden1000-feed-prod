@@ -48,13 +48,15 @@ def _offer_text(offer) -> str:
 
 def _print_live_probe(source_maps: dict[str, dict], active_skus: set[str]) -> None:
     probes = {
-        "METAL_DRILLS": lambda text: ("сверд" in text or "сверл" in text or "drill" in text) and ("метал" in text or "metal" in text),
-        "SPADE_DRILLS": lambda text: "перов" in text or "spade" in text,
-        "PAINT_TRAYS": lambda text: "кювет" in text or "лоток" in text or "tray" in text,
+        "DRILLS_ANY": lambda text: "сверд" in text or "сверл" in text or "drill" in text,
+        "METAL_DRILLS": lambda text: ("сверд" in text or "сверл" in text or "drill" in text) and ("метал" in text or "metal" in text or "hss" in text),
+        "SPADE_DRILLS": lambda text: "перов" in text or "spade" in text or "лопат" in text,
+        "PAINT_TRAYS": lambda text: "кювет" in text or "лоток" in text,
     }
     for label, predicate in probes.items():
         print(f"LIVE_PROBE_{label}_BEGIN")
         found = 0
+        limit = 100 if label == "DRILLS_ANY" else 40
         for supplier in ("SIGMA", "ZAINSTRUMENTOM", "GRANDINSTRUMENT", "TEKNOSEL"):
             for sku, offer in source_maps[supplier].items():
                 if offer.get("available") != "true" or sku in active_skus:
@@ -64,17 +66,18 @@ def _print_live_probe(source_maps: dict[str, dict], active_skus: set[str]) -> No
                     continue
                 name = (offer.findtext("name_ua") or offer.findtext("name") or "").strip().replace("\n", " ")
                 price = (offer.findtext("price") or "").strip()
-                print(f"LIVE_PROBE|{label}|{supplier}|{sku}|{price}|{name}")
+                category = (offer.findtext("categoryId") or "").strip()
+                print(f"LIVE_PROBE|{label}|{supplier}|{sku}|{price}|cat={category}|{name}")
                 found += 1
-                if found >= 40:
+                if found >= limit:
                     break
-            if found >= 40:
+            if found >= limit:
                 break
         print(f"LIVE_PROBE_{label}_END count={found}")
 
     explicit = {
         "SIGMA": ["1193081", "1193071", "1191692", "1191682", "5035865", "2723025", "1314055"],
-        "ZAINSTRUMENTOM": ["20082", "20014", "20011", "20076", "20077", "20125"],
+        "ZAINSTRUMENTOM": ["20082", "20014", "20011", "20076", "20077", "20125", "20146", "RM 418 1800"],
     }
     for supplier, skus in explicit.items():
         for sku in skus:
@@ -84,7 +87,8 @@ def _print_live_probe(source_maps: dict[str, dict], active_skus: set[str]) -> No
                 continue
             name = (offer.findtext("name_ua") or offer.findtext("name") or "").strip().replace("\n", " ")
             price = (offer.findtext("price") or "").strip()
-            print(f"LIVE_EXACT|{supplier}|{sku}|available={offer.get('available')}|price={price}|{name}")
+            category = (offer.findtext("categoryId") or "").strip()
+            print(f"LIVE_EXACT|{supplier}|{sku}|available={offer.get('available')}|price={price}|cat={category}|{name}")
 
 
 def main() -> None:
