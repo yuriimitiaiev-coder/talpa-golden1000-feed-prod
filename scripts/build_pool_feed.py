@@ -39,6 +39,54 @@ def write_atomically(path, data: bytes) -> None:
     os.replace(temp_name, path)
 
 
+def _offer_text(offer) -> str:
+    return " ".join(
+        (offer.findtext(tag) or "").strip()
+        for tag in ("name_ua", "name", "vendor", "vendorCode")
+    ).lower()
+
+
+def _print_live_probe(source_maps: dict[str, dict], active_skus: set[str]) -> None:
+    probes = {
+        "METAL_DRILLS": lambda text: ("сверд" in text or "сверл" in text or "drill" in text) and ("метал" in text or "metal" in text),
+        "SPADE_DRILLS": lambda text: "перов" in text or "spade" in text,
+        "PAINT_TRAYS": lambda text: "кювет" in text or "лоток" in text or "tray" in text,
+    }
+    for label, predicate in probes.items():
+        print(f"LIVE_PROBE_{label}_BEGIN")
+        found = 0
+        for supplier in ("SIGMA", "ZAINSTRUMENTOM", "GRANDINSTRUMENT", "TEKNOSEL"):
+            for sku, offer in source_maps[supplier].items():
+                if offer.get("available") != "true" or sku in active_skus:
+                    continue
+                text = _offer_text(offer)
+                if not predicate(text):
+                    continue
+                name = (offer.findtext("name_ua") or offer.findtext("name") or "").strip().replace("\n", " ")
+                price = (offer.findtext("price") or "").strip()
+                print(f"LIVE_PROBE|{label}|{supplier}|{sku}|{price}|{name}")
+                found += 1
+                if found >= 40:
+                    break
+            if found >= 40:
+                break
+        print(f"LIVE_PROBE_{label}_END count={found}")
+
+    explicit = {
+        "SIGMA": ["1193081", "1193071", "1191692", "1191682", "5035865", "2723025", "1314055"],
+        "ZAINSTRUMENTOM": ["20082", "20014", "20011", "20076", "20077", "20125"],
+    }
+    for supplier, skus in explicit.items():
+        for sku in skus:
+            offer = source_maps[supplier].get(sku)
+            if offer is None:
+                print(f"LIVE_EXACT|{supplier}|{sku}|MISSING")
+                continue
+            name = (offer.findtext("name_ua") or offer.findtext("name") or "").strip().replace("\n", " ")
+            price = (offer.findtext("price") or "").strip()
+            print(f"LIVE_EXACT|{supplier}|{sku}|available={offer.get('available')}|price={price}|{name}")
+
+
 def main() -> None:
     pool = load_pool()
     groups = load_groups()
@@ -70,6 +118,7 @@ def main() -> None:
     ]
     if unresolved:
         print("UNRESOLVED_ACTIVE_NO_FALLBACK=" + ",".join(unresolved))
+        _print_live_probe(source_maps, {r["sku"] for r in active_rows})
 
     # TALPA only patches verified supplier-content defects. Price guarding for
     # ZaInstrumentom is handled separately above and affects commercial fields only.
