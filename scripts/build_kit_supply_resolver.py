@@ -51,6 +51,24 @@ def price_basis_for(partner: str, sku: str, za_adjusted: set[str]) -> str:
     return "UNSUPPORTED_SUPPLIER"
 
 
+def empty_live_item(partner: str, sku: str, role: str, price_basis: str) -> dict[str, object]:
+    return {
+        "partner": partner,
+        "sku": sku,
+        "role": role,
+        "name": "",
+        "brand": "",
+        "source_url": "",
+        "found": False,
+        "available": False,
+        "quantity": 0,
+        "rrp": None,
+        "currency": "UAH",
+        "price_basis": price_basis,
+        "quoteable": False,
+    }
+
+
 def load_targets() -> list[dict[str, str]]:
     if not TARGETS_CSV.exists():
         raise SystemExit(f"Missing KIT target list: {TARGETS_CSV}")
@@ -132,39 +150,26 @@ def live_item(
 ) -> dict[str, object]:
     source_map = maps.get(partner)
     if source_map is None:
-        return {
-            "partner": partner,
-            "sku": sku,
-            "role": role,
-            "found": False,
-            "available": False,
-            "quantity": 0,
-            "rrp": None,
-            "currency": "UAH",
-            "price_basis": "UNSUPPORTED_SUPPLIER",
-            "quoteable": False,
-        }
+        return empty_live_item(partner, sku, role, "UNSUPPORTED_SUPPLIER")
     source = source_map.get(sku)
     if source is None:
-        return {
-            "partner": partner,
-            "sku": sku,
-            "role": role,
-            "found": False,
-            "available": False,
-            "quantity": 0,
-            "rrp": None,
-            "currency": "UAH",
-            "price_basis": "MISSING_FROM_LIVE_FEED",
-            "quoteable": False,
-        }
+        return empty_live_item(partner, sku, role, "MISSING_FROM_LIVE_FEED")
     rrp = positive_number(source.findtext("price"))
     available = source.get("available") == "true"
     quantity = quantity_for(source, available)
+    name = (
+        (source.findtext("name_ua") or "").strip()
+        or (source.findtext("name") or "").strip()
+    )
+    brand = (source.findtext("vendor") or "").strip()
+    source_url = (source.findtext("url") or "").strip()
     return {
         "partner": partner,
         "sku": sku,
         "role": role,
+        "name": name,
+        "brand": brand,
+        "source_url": source_url,
         "found": True,
         "available": available,
         "quantity": quantity,
@@ -223,6 +228,7 @@ def write_kit_supply_resolver(
             "note": "",
             "resolved_items": [primary],
             "decision": "PRIMARY_OK" if primary["quoteable"] else "HOLD",
+            "line_action": "KEEP_PRIMARY" if primary["quoteable"] else "BLOCK",
             "can_quote": bool(primary["quoteable"]),
         }
 
@@ -254,6 +260,7 @@ def write_kit_supply_resolver(
 
         if rule["status"] != ACTIVE_SUBSTITUTE_STATUS or not rule["live_coverage"]:
             base["decision"] = "HOLD"
+            base["line_action"] = "BLOCK"
             base["can_quote"] = False
             base["resolved_items"] = []
             items.append(base)
@@ -263,55 +270,47 @@ def write_kit_supply_resolver(
         for coverage_sku in coverage_skus(rule["live_coverage"]):
             pool_row = pool.get(coverage_sku)
             if pool_row is None:
-                resolved.append(
-                    {
-                        "partner": "",
-                        "sku": coverage_sku,
-                        "role": "SUBSTITUTE",
-                        "found": False,
-                        "available": False,
-                        "quantity": 0,
-                        "rrp": None,
-                        "currency": "UAH",
-                        "price_basis": "NOT_ACTIVE_IN_GOLDEN_POOL",
-                        "quoteable": False,
-                    }
-                )
+                resolved.append(empty_live_item("", coverage_sku, "SUBSTITUTE", "NOT_ACTIVE_IN_GOLDEN_POOL"))
                 continue
             replacement_partner = (pool_row.get("supplier") or "").strip().upper()
             if replacement_partner not in APPROVED_KIT_SUPPLIERS:
                 resolved.append(
-                    {
-                        "partner": replacement_partner,
-                        "sku": coverage_sku,
-                        "role": "SUBSTITUTE",
-                        "found": False,
-                        "available": False,
-                        "quantity": 0,
-                        "rrp": None,
-                        "currency": "UAH",
-                        "price_basis": "SUPPLIER_NOT_APPROVED_FOR_KIT",
-                        "quoteable": False,
-                    }
+                    empty_live_item(
+                        replacement_partner,
+                        coverage_sku,
+                        "SUBSTITUTE",
+                        "SUPPLIER_NOT_APPROVED_FOR_KIT",
+                    )
                 )
                 continue
-            resolved.append(
-                live_item(
-                    replacement_partner,
-                    coverage_sku,
-                    maps,
-                    za_adjusted,
-                    role="SUBSTITUTE",
-                )
+            item = live_item(
+                replacement_partner,
+                coverage_sku,
+                maps,
+                za_adjusted,
+                role="SUBSTITUTE",
             )
+            if not item["name"]:
+                item["name"] = (pool_row.get("fallback_name") or "").strip()
+            resolved.append(item)
 
         all_quoteable = bool(resolved) and all(bool(item["quoteable"]) for item in resolved)
         if all_quoteable:
+            is_duplicate_coverage = rule["coverage_mode"] == "MASTER_DUPLICATE"
             is_composite = len(resolved) > 1 or "COMPOSITE" in rule["coverage_mode"]
-            base["decision"] = "COMPOSITE" if is_composite else "SUBSTITUTE"
+            if is_duplicate_coverage:
+                base["decision"] = "SUBSTITUTE"
+                base["line_action"] = "REQUIRE_EXISTING_COVERAGE"
+            elif is_composite:
+                base["decision"] = "COMPOSITE"
+                base["line_action"] = "REPLACE_COMPOSITE"
+            else:
+                base["decision"] = "SUBSTITUTE"
+                base["line_action"] = "REPLACE_1_TO_1"
             base["can_quote"] = True
         else:
             base["decision"] = "HOLD"
+            base["line_action"] = "BLOCK"
             base["can_quote"] = False
         base["resolved_items"] = resolved
         items.append(base)
@@ -319,6 +318,16 @@ def write_kit_supply_resolver(
     decision_counts = {
         decision: sum(1 for item in items if item["decision"] == decision)
         for decision in ("PRIMARY_OK", "SUBSTITUTE", "COMPOSITE", "HOLD")
+    }
+    line_action_counts = {
+        action: sum(1 for item in items if item["line_action"] == action)
+        for action in (
+            "KEEP_PRIMARY",
+            "REPLACE_1_TO_1",
+            "REPLACE_COMPOSITE",
+            "REQUIRE_EXISTING_COVERAGE",
+            "BLOCK",
+        )
     }
     payload: dict[str, object] = {
         "schema_version": 1,
@@ -331,6 +340,7 @@ def write_kit_supply_resolver(
         "quoteable_count": sum(bool(item["can_quote"]) for item in items),
         "blocked_count": sum(not bool(item["can_quote"]) for item in items),
         "decision_counts": decision_counts,
+        "line_action_counts": line_action_counts,
         "items": items,
     }
     OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
@@ -346,6 +356,7 @@ def write_kit_supply_resolver(
                 "quoteable_count": payload["quoteable_count"],
                 "blocked_count": payload["blocked_count"],
                 "decision_counts": decision_counts,
+                "line_action_counts": line_action_counts,
             },
             ensure_ascii=False,
         )
