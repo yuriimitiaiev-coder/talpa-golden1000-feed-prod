@@ -57,6 +57,7 @@ jobs:
           test -s docs/golden1000.xml
           test -s docs/status.json
           test -s docs/kit_price_snapshot.json
+          test -s docs/kit_supply_resolver.json
           python - <<'PY'
           import json
           import sys
@@ -68,6 +69,7 @@ jobs:
 
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
           snapshot = json.loads(Path("docs/kit_price_snapshot.json").read_text(encoding="utf-8"))
+          resolver = json.loads(Path("docs/kit_supply_resolver.json").read_text(encoding="utf-8"))
           pool = load_pool()
           active = [r for r in pool if r["status"] == "ACTIVE"]
 
@@ -104,6 +106,57 @@ jobs:
           assert len(set(snapshot_keys)) == 99, snapshot_keys
           assert snapshot["found_count"] + snapshot["missing_count"] == 99, snapshot
 
+          assert resolver["schema_version"] == 1, resolver
+          assert resolver["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", resolver
+          assert resolver["source_substitution_registry"] == "master_live_substitutes.csv", resolver
+          assert resolver["policy"] == "APPROVED_SUPPLIERS_ONLY", resolver
+          assert resolver["approved_suppliers"] == ["GRANDINSTRUMENT", "SIGMA", "ZAINSTRUMENTOM"], resolver
+          assert resolver["configured_sku_count"] == 99, resolver
+          assert len(resolver["items"]) == 99, resolver
+          assert sum(resolver["decision_counts"].values()) == 99, resolver
+          assert sum(resolver["line_action_counts"].values()) == 99, resolver
+          assert resolver["quoteable_count"] + resolver["blocked_count"] == 99, resolver
+
+          allowed_decisions = {"PRIMARY_OK", "SUBSTITUTE", "COMPOSITE", "HOLD"}
+          allowed_actions = {
+              "KEEP_PRIMARY",
+              "REPLACE_1_TO_1",
+              "REPLACE_COMPOSITE",
+              "REQUIRE_EXISTING_COVERAGE",
+              "BLOCK",
+          }
+          resolver_skus = []
+          for item in resolver["items"]:
+              assert item["decision"] in allowed_decisions, item
+              assert item["line_action"] in allowed_actions, item
+              resolver_skus.append(item["primary_sku"])
+              for resolved in item["resolved_items"]:
+                  partner = resolved.get("partner") or ""
+                  if partner:
+                      assert partner in resolver["approved_suppliers"], resolved
+                  if resolved["quoteable"]:
+                      assert resolved.get("name"), resolved
+              if item["can_quote"]:
+                  assert item["decision"] != "HOLD", item
+                  assert item["line_action"] != "BLOCK", item
+                  assert item["resolved_items"], item
+                  assert all(r["quoteable"] for r in item["resolved_items"]), item
+              else:
+                  assert item["decision"] == "HOLD", item
+                  assert item["line_action"] == "BLOCK", item
+          assert len(set(resolver_skus)) == 99, resolver_skus
+
+          # Fail closed on the unresolved drill until an approved, live and available
+          # replacement exists. MASTER_DUPLICATE is existing coverage, not extra qty.
+          drill = next(item for item in resolver["items"] if item["primary_sku"] == "YT-82786")
+          assert drill["decision"] == "HOLD", drill
+          assert drill["line_action"] == "BLOCK", drill
+          assert drill["can_quote"] is False, drill
+          duplicate = next(item for item in resolver["items"] if item["primary_sku"] == "9419111")
+          assert duplicate["coverage_mode"] == "MASTER_DUPLICATE", duplicate
+          assert duplicate["line_action"] == "REQUIRE_EXISTING_COVERAGE", duplicate
+          assert len(duplicate["resolved_items"]) == 1, duplicate
+
           print(json.dumps(status, ensure_ascii=False, indent=2))
           print(json.dumps({
               "kit_price_snapshot": {
@@ -112,7 +165,14 @@ jobs:
                   "missing_count": snapshot["missing_count"],
                   "available_count": snapshot["available_count"],
                   "found_by_partner": snapshot["found_by_partner"],
-              }
+              },
+              "kit_supply_resolver": {
+                  "configured_sku_count": resolver["configured_sku_count"],
+                  "quoteable_count": resolver["quoteable_count"],
+                  "blocked_count": resolver["blocked_count"],
+                  "decision_counts": resolver["decision_counts"],
+                  "line_action_counts": resolver["line_action_counts"],
+              },
           }, ensure_ascii=False, indent=2))
           PY
 
