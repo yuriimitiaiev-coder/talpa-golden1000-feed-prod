@@ -1,3 +1,4 @@
+# Final feature acceptance after production publish gate wiring
 name: Validate TALPA Stage 5 supply resolver
 
 on:
