@@ -1,0 +1,120 @@
+name: Validate TALPA Stage 5 supply resolver
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [stage5-supply-resolver]
+    paths:
+      - "pool/**"
+      - "scripts/**"
+      - "sources/**"
+      - ".github/workflows/stage5-resolver-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Build feed plus Stage 5 resolver without deploy
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          PUBLISHED_FEED_URL: https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml
+          MAX_CAPACITY: "1000"
+          MAX_MISSING_ACTIVE: "25"
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: python scripts/build_pool_feed.py
+
+      - name: Validate resolver contract
+        run: |
+          test -s docs/golden1000.xml
+          test -s docs/status.json
+          test -s docs/kit_price_snapshot.json
+          test -s docs/kit_supply_resolver.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          snapshot = json.loads(Path("docs/kit_price_snapshot.json").read_text(encoding="utf-8"))
+          resolver = json.loads(Path("docs/kit_supply_resolver.json").read_text(encoding="utf-8"))
+
+          assert snapshot["schema_version"] == 1, snapshot
+          assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
+          assert snapshot["configured_sku_count"] == 99, snapshot
+          assert len(snapshot["items"]) == 99, snapshot
+
+          assert resolver["schema_version"] == 1, resolver
+          assert resolver["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", resolver
+          assert resolver["source_substitution_registry"] == "master_live_substitutes.csv", resolver
+          assert resolver["policy"] == "APPROVED_SUPPLIERS_ONLY", resolver
+          assert resolver["approved_suppliers"] == ["GRANDINSTRUMENT", "SIGMA", "ZAINSTRUMENTOM"], resolver
+          assert resolver["configured_sku_count"] == 99, resolver
+          assert len(resolver["items"]) == 99, resolver
+          assert sum(resolver["decision_counts"].values()) == 99, resolver
+          assert resolver["quoteable_count"] + resolver["blocked_count"] == 99, resolver
+
+          allowed_decisions = {"PRIMARY_OK", "SUBSTITUTE", "COMPOSITE", "HOLD"}
+          primary_skus = []
+          for item in resolver["items"]:
+              assert item["decision"] in allowed_decisions, item
+              primary_skus.append(item["primary_sku"])
+              for resolved in item["resolved_items"]:
+                  partner = resolved.get("partner") or ""
+                  if partner:
+                      assert partner in resolver["approved_suppliers"], resolved
+              if item["can_quote"]:
+                  assert item["decision"] != "HOLD", item
+                  assert item["resolved_items"], item
+                  assert all(r["quoteable"] for r in item["resolved_items"]), item
+              else:
+                  assert item["decision"] == "HOLD", item
+          assert len(set(primary_skus)) == 99, primary_skus
+
+          # Current policy acceptance: the retired YT-82786 drill must remain blocked
+          # until an approved + live + available replacement exists.
+          drill = next(item for item in resolver["items"] if item["primary_sku"] == "YT-82786")
+          assert drill["decision"] == "HOLD", drill
+          assert drill["can_quote"] is False, drill
+
+          print(json.dumps({
+              "snapshot": {
+                  "generated_at_utc": snapshot["generated_at_utc"],
+                  "found": snapshot["found_count"],
+                  "available": snapshot["available_count"],
+                  "missing": snapshot["missing_count"],
+              },
+              "resolver": {
+                  "generated_at_utc": resolver["generated_at_utc"],
+                  "quoteable": resolver["quoteable_count"],
+                  "blocked": resolver["blocked_count"],
+                  "decisions": resolver["decision_counts"],
+              },
+          }, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage5-supply-resolver-validation
+          path: |
+            docs/kit_price_snapshot.json
+            docs/kit_supply_resolver.json
+            docs/status.json
+          retention-days: 3
