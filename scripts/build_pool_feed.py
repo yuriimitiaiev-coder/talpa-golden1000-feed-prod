@@ -6,6 +6,7 @@ import os
 import tempfile
 
 from build_kit_price_snapshot import write_kit_price_snapshot
+from build_kit_supply_resolver import write_kit_supply_resolver
 from content_patches import patch_grand_content, validate_grand_output
 from price_guard import normalize_zainstrumentom_promotions
 from pool_common import (
@@ -106,10 +107,20 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    # Stage 3 B2B: build a compact RRP/availability snapshot for the 99 unique
-    # SKU used by frozen TALPA KIT-01…06. This reuses the same already-downloaded
-    # supplier maps; it does not change Golden1000 commercial logic.
+    # Stage 3 B2B: compact live RRP/availability snapshot for the frozen 99 SKU.
+    # This remains the direct PRIMARY SKU price source used by the existing Feed CO Engine.
     write_kit_price_snapshot(
+        sigma_map=sigma_map,
+        za_map=za_map,
+        grand_map=grand_map,
+        za_adjustments=za_promo_adjustments,
+    )
+
+    # Stage 5 B2B: resolve temporarily unavailable frozen MASTER SKU through the
+    # explicitly approved live-coverage registry. MASTER itself is never rewritten.
+    # The artifact is advisory/machine-readable and does not alter golden1000.xml.
+    write_kit_supply_resolver(
+        pool_rows=pool,
         sigma_map=sigma_map,
         za_map=za_map,
         grand_map=grand_map,
@@ -132,6 +143,7 @@ def main() -> None:
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
 <p><a href="kit_price_snapshot.json">kit_price_snapshot.json</a></p>
+<p><a href="kit_supply_resolver.json">kit_supply_resolver.json</a></p>
 </body>
 </html>
 """,
