@@ -68,30 +68,51 @@ jobs:
           assert resolver["configured_sku_count"] == 99, resolver
           assert len(resolver["items"]) == 99, resolver
           assert sum(resolver["decision_counts"].values()) == 99, resolver
+          assert sum(resolver["line_action_counts"].values()) == 99, resolver
           assert resolver["quoteable_count"] + resolver["blocked_count"] == 99, resolver
 
           allowed_decisions = {"PRIMARY_OK", "SUBSTITUTE", "COMPOSITE", "HOLD"}
+          allowed_actions = {
+              "KEEP_PRIMARY",
+              "REPLACE_1_TO_1",
+              "REPLACE_COMPOSITE",
+              "REQUIRE_EXISTING_COVERAGE",
+              "BLOCK",
+          }
           primary_skus = []
           for item in resolver["items"]:
               assert item["decision"] in allowed_decisions, item
+              assert item["line_action"] in allowed_actions, item
               primary_skus.append(item["primary_sku"])
               for resolved in item["resolved_items"]:
                   partner = resolved.get("partner") or ""
                   if partner:
                       assert partner in resolver["approved_suppliers"], resolved
+                  if resolved["quoteable"]:
+                      assert resolved.get("name"), resolved
               if item["can_quote"]:
                   assert item["decision"] != "HOLD", item
+                  assert item["line_action"] != "BLOCK", item
                   assert item["resolved_items"], item
                   assert all(r["quoteable"] for r in item["resolved_items"]), item
               else:
                   assert item["decision"] == "HOLD", item
+                  assert item["line_action"] == "BLOCK", item
           assert len(set(primary_skus)) == 99, primary_skus
 
           # Current policy acceptance: the retired YT-82786 drill must remain blocked
           # until an approved + live + available replacement exists.
           drill = next(item for item in resolver["items"] if item["primary_sku"] == "YT-82786")
           assert drill["decision"] == "HOLD", drill
+          assert drill["line_action"] == "BLOCK", drill
           assert drill["can_quote"] is False, drill
+
+          # MASTER_DUPLICATE is coverage by an already existing CONFIG line, not a
+          # request to add a second quantity of the coverage SKU.
+          duplicate = next(item for item in resolver["items"] if item["primary_sku"] == "9419111")
+          assert duplicate["coverage_mode"] == "MASTER_DUPLICATE", duplicate
+          assert duplicate["line_action"] == "REQUIRE_EXISTING_COVERAGE", duplicate
+          assert len(duplicate["resolved_items"]) == 1, duplicate
 
           print(json.dumps({
               "snapshot": {
@@ -105,6 +126,7 @@ jobs:
                   "quoteable": resolver["quoteable_count"],
                   "blocked": resolver["blocked_count"],
                   "decisions": resolver["decision_counts"],
+                  "line_actions": resolver["line_action_counts"],
               },
           }, ensure_ascii=False, indent=2))
           PY
