@@ -1,0 +1,42 @@
+name: Diagnose Grand Instrument drill candidates
+
+on:
+  push:
+    branches: [diagnostic-grand-drills-20260910]
+    paths:
+      - "scripts/diagnose_grand_drills.py"
+      - ".github/workflows/diagnose-grand-drills.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Inspect full Grand Instrument feed
+        env:
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: python scripts/diagnose_grand_drills.py
+
+      - name: Upload diagnostic report
+        uses: actions/upload-artifact@v4
+        with:
+          name: grand-drill-candidates
+          path: diagnostics/
+          if-no-files-found: error
+          retention-days: 7
