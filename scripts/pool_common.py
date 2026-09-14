@@ -16,6 +16,7 @@ OUTPUT_XML = OUTPUT_DIR / "golden1000.xml"
 STATUS_JSON = OUTPUT_DIR / "status.json"
 INDEX_HTML = OUTPUT_DIR / "index.html"
 EXCLUDED_SKUS_FILE = POOL_DIR / "excluded_skus.txt"
+STATUS_OVERRIDES_FILE = POOL_DIR / "status_overrides.csv"
 
 MAX_CAPACITY = int(os.environ.get("MAX_CAPACITY", "1000"))
 MAX_MISSING_ACTIVE = int(os.environ.get("MAX_MISSING_ACTIVE", "25"))
@@ -110,12 +111,34 @@ def load_excluded_skus() -> set[str]:
     }
 
 
+def load_status_overrides() -> dict[str, str]:
+    if not STATUS_OVERRIDES_FILE.exists():
+        return {}
+    result: dict[str, str] = {}
+    with STATUS_OVERRIDES_FILE.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or not {"sku", "status"}.issubset(reader.fieldnames):
+            fail(f"{STATUS_OVERRIDES_FILE.name} must contain columns: sku,status")
+        for raw in reader:
+            sku = (raw.get("sku") or "").strip()
+            status = (raw.get("status") or "").strip().upper()
+            if not sku:
+                continue
+            if sku in result:
+                fail(f"Duplicate status override for SKU: {sku}")
+            if status not in ALLOWED_STATUSES:
+                fail(f"Invalid status override for {sku}: {status!r}")
+            result[sku] = status
+    return result
+
+
 def load_pool() -> list[dict[str, str]]:
     files = sorted(POOL_DIR.glob("catalog_pool_*.csv"))
     if not files:
         fail(f"No catalog pool files in {POOL_DIR}")
     required = {"sku", "supplier", "status", "prom_offer_id", "prom_group_id", "fallback_price"}
     excluded = load_excluded_skus()
+    overrides = load_status_overrides()
     rows: list[dict[str, str]] = []
     seen: set[str] = set()
     for path in files:
@@ -132,12 +155,15 @@ def load_pool() -> list[dict[str, str]]:
                     fail(f"Duplicate SKU in pool: {sku}")
                 seen.add(sku)
                 row["supplier"] = row["supplier"].upper()
-                row["status"] = row["status"].upper()
+                row["status"] = overrides.get(sku, row["status"]).upper()
                 if row["supplier"] not in ALLOWED_SUPPLIERS:
                     fail(f"Unknown supplier for {sku}: {row['supplier']!r}")
                 if row["status"] not in ALLOWED_STATUSES:
                     fail(f"Unknown status for {sku}: {row['status']!r}")
                 rows.append(row)
+    unknown_overrides = sorted(set(overrides) - seen)
+    if unknown_overrides:
+        fail("Status override references SKU outside configured pool: " + ",".join(unknown_overrides))
     if len(rows) > MAX_CAPACITY:
         fail(f"Configured pool has {len(rows)} rows; capacity is {MAX_CAPACITY}")
     active = [r for r in rows if r["status"] == "ACTIVE"]
