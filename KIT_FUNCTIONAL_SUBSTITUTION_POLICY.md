@@ -29,6 +29,8 @@ Always use the best available level and stop at the first safe level:
 
 A2/C/D emergency sourcing does not automatically require permanent inclusion in Golden1000.
 
+For permanent Golden1000 ACTIVE publication, the SKU must also be present in the corresponding live supplier feed or have an already-existing safe fallback card. Website availability alone is sufficient only for an order-execution route, not for automatic feed publication.
+
 ## 4. Evaluation fields
 
 Each MASTER substitution decision must state:
