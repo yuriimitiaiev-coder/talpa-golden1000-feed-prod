@@ -90,3 +90,16 @@ The resolver must distinguish FEED UNAVAILABLE from true ORDER BLOCKED.
 
 A missing SKU is not by itself a blocked KIT.
 Only loss of the required function after exhausting A1 -> A2 -> B -> C -> D is BLOCKED.
+
+## 11. ACTIVE/RESERVE rule for unavailable MASTER and non-replaceable items
+
+A SKU that is unavailable and has no safe live replacement must not permanently consume one of the 980 ACTIVE publication slots.
+
+- Keep the frozen MASTER definition unchanged.
+- Move the unavailable SKU to RESERVE rather than deleting it.
+- RESERVE is the controlled holding area for HOLD/BLOCKED MASTER items, unavailable items awaiting stock recovery, and approved return candidates.
+- Use the freed ACTIVE slot for an available, validated SKU.
+- Maintain the steady-state architecture at 980 ACTIVE + 20 RESERVE.
+- If a RESERVED MASTER returns to stock or receives an approved A/B/C/D replacement, it may be promoted back to ACTIVE through the controlled rotation process.
+- Moving a MASTER SKU to RESERVE changes only publication state; it does not remove the SKU from the frozen MASTER or cancel its ORDER READY substitution route.
+
