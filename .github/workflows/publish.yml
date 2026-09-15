@@ -152,10 +152,22 @@ jobs:
           assert drill["decision"] == "HOLD", drill
           assert drill["line_action"] == "BLOCK", drill
           assert drill["can_quote"] is False, drill
-          duplicate = next(item for item in resolver["items"] if item["primary_sku"] == "9419111")
-          assert duplicate["coverage_mode"] == "MASTER_DUPLICATE", duplicate
-          assert duplicate["line_action"] == "REQUIRE_EXISTING_COVERAGE", duplicate
-          assert len(duplicate["resolved_items"]) == 1, duplicate
+          prefilter = next(item for item in resolver["items"] if item["primary_sku"] == "9419111")
+          assert prefilter["coverage_mode"] == "HOLD", prefilter
+          assert prefilter["decision"] == "HOLD", prefilter
+          assert prefilter["line_action"] == "BLOCK", prefilter
+          assert prefilter["can_quote"] is False, prefilter
+
+          drywall_45 = next(item for item in resolver["items"] if item["primary_sku"] == "1109-0872")
+          assert drywall_45["decision"] == "HOLD", drywall_45
+          assert drywall_45["line_action"] == "BLOCK", drywall_45
+          assert drywall_45["can_quote"] is False, drywall_45
+
+          hacksaw = next(item for item in resolver["items"] if item["primary_sku"] == "HSP0300")
+          assert hacksaw["can_quote"] is True, hacksaw
+          if hacksaw["decision"] == "SUBSTITUTE":
+              assert len(hacksaw["resolved_items"]) == 1, hacksaw
+              assert hacksaw["resolved_items"][0]["sku"] == "YT-31612", hacksaw
 
           print(json.dumps(status, ensure_ascii=False, indent=2))
           print(json.dumps({

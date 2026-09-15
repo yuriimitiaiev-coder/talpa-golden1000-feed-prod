@@ -90,3 +90,5 @@ VI0331
 # MASTER replacement candidates rejected by live availability acceptance — 08.09.2026
 8316735
 7411832
+# STEP4 controlled MASTER rotation — 15.09.2026
+1001-1882
