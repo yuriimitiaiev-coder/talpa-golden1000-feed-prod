@@ -16,6 +16,7 @@ MW280_63267
 MW210_60730
 1001-1903
 13822
+1109-0870
 24612
 4242312
 1103-1747
@@ -89,5 +90,3 @@ VI0331
 # MASTER replacement candidates rejected by live availability acceptance — 08.09.2026
 8316735
 7411832
-# STEP5 controlled 45-degree MASTER rotation — 16.09.2026
-1001-1882

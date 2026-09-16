@@ -1,6 +1,6 @@
 primary_master_sku,master_supplier,live_coverage,coverage_mode,status,as_of,note
 100741,GRANDINSTRUMENT,105900,EXISTING_LIVE,ACTIVE,2026-09-08,"SKU collision: Prom 100741 is another ZaInstrumentom TAKAGI item; MASTER function covered by 105900"
-1109-0872,ZAINSTRUMENTOM,1109-0870,LIVE_SUBSTITUTE_CONDITIONAL,ACTIVE,2026-09-16,"Approved 45° functional substitute test: TAJIMA TBK180-H45, same 45° angle and 18 mm blade; 180 mm body instead of 120 mm primary"
+1109-0872,ZAINSTRUMENTOM,,HOLD,HOLD,2026-09-16,"Both exact 1109-0872 and 45° backup 1109-0870 are present in live supplier feed but available=false, quantity=0; keep HOLD until feed-backed stock returns"
 1193101,SIGMA,,HOLD,HOLD,2026-09-08,"No safe live substitute in supplier feeds; keep PRIMARY MASTER card unavailable until stock or equivalent appears"
 1303311,SIGMA,,HOLD,HOLD,2026-09-08,"No safe live spade-drill substitute in supplier feeds; keep PRIMARY MASTER card unavailable until stock or equivalent appears"
 1719691,SIGMA,,HOLD,HOLD,2026-09-08,"No confirmed live exact substitute"

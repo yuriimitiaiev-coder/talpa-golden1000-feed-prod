@@ -1,6 +1,6 @@
 sku,supplier,status,prom_offer_id,prom_group_id,fallback_price,fallback_name
 4317431,SIGMA,ACTIVE,,1009,218.00,Киянка гумова біла 680 г SIGMA
-1193101,SIGMA,RESERVE,1193101,902,401.00,Набір свердел по металу HSS-TIN 1–10 мм
+1193101,SIGMA,ACTIVE,1193101,902,401.00,Набір свердел по металу HSS-TIN 1–10 мм
 122510-2KH,ZAINSTRUMENTOM,ACTIVE,,1023,,
 122607-2K,ZAINSTRUMENTOM,ACTIVE,,1023,,
 123628-2K,ZAINSTRUMENTOM,ACTIVE,,1019,,
