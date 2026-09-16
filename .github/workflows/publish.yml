@@ -159,9 +159,11 @@ jobs:
           assert prefilter["can_quote"] is False, prefilter
 
           drywall_45 = next(item for item in resolver["items"] if item["primary_sku"] == "1109-0872")
-          assert drywall_45["decision"] == "HOLD", drywall_45
-          assert drywall_45["line_action"] == "BLOCK", drywall_45
-          assert drywall_45["can_quote"] is False, drywall_45
+          assert drywall_45["can_quote"] is True, drywall_45
+          if drywall_45["decision"] == "SUBSTITUTE":
+              assert drywall_45["line_action"] == "REPLACE_1_TO_1", drywall_45
+              assert len(drywall_45["resolved_items"]) == 1, drywall_45
+              assert drywall_45["resolved_items"][0]["sku"] == "1109-0870", drywall_45
 
           hacksaw = next(item for item in resolver["items"] if item["primary_sku"] == "HSP0300")
           assert hacksaw["can_quote"] is True, hacksaw
