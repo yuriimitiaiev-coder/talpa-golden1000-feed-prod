@@ -1,8 +1,8 @@
-# TALPA KIT — Functional Substitution Policy v1.0
+# TALPA KIT — Functional Substitution Policy v1.1
 
 Status: APPROVED
-Effective date: 2026-09-14
-Frozen master source: TALPA_KIT_MASTER_FINAL_v1_0
+Effective date: 2026-09-16
+Frozen master source: TALPA_KIT_MASTER_FINAL_v1_1
 
 ## 1. Purpose
 
@@ -83,7 +83,7 @@ Never remove the old card before the replacement has been confirmed in Prom.
 
 ## 9. MASTER integrity
 
-TALPA_KIT_MASTER_FINAL_v1_0 is not modified by operational substitutions.
+TALPA_KIT_MASTER_FINAL_v1_1 is not modified by operational substitutions.
 The resolver must distinguish FEED UNAVAILABLE from true ORDER BLOCKED.
 
 ## 10. Current decision principle
@@ -103,3 +103,19 @@ A SKU that is unavailable and has no safe live replacement must not permanently 
 - If a RESERVED MASTER returns to stock or receives an approved A/B/C/D replacement, it may be promoted back to ACTIVE through the controlled rotation process.
 - Moving a MASTER SKU to RESERVE changes only publication state; it does not remove the SKU from the frozen MASTER or cancel its ORDER READY substitution route.
 
+## 12. FINAL v1.1 scope
+
+TALPA_KIT_MASTER_FINAL_v1_1 supersedes v1.0 for current KIT configuration; v1.0 remains an immutable historical baseline.
+
+Permanent v1.1 PRIMARY replacements:
+- 20039 -> RM 418 1800
+- EHF0500 -> 4316051
+- 8316755 -> 20101
+- 50478 -> 1105-0349
+
+Approved removals from the standard KIT MASTER:
+- 9419111 — separate P2 spare set removed because the standard 9417491 half-mask package already includes P2 elements;
+- 9419311 — separate spare holders removed from the standard KIT;
+- 1109-0872 — removed from standard KIT-02 and retained only as OPTIONAL / manual-quote functionality when feed-backed stock is confirmed.
+
+FINAL v1.1 target list contains 96 unique PRIMARY MASTER SKU.
