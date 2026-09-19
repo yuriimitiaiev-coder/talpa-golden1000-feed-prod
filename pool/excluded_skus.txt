@@ -90,3 +90,5 @@ VI0331
 # MASTER replacement candidates rejected by live availability acceptance — 08.09.2026
 8316735
 7411832
+# PLWP0110 controlled catalogue rotation — 19.09.2026
+9784284

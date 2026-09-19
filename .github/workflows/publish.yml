@@ -90,6 +90,17 @@ jobs:
           assert len(set(codes)) == len(codes)
           assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
 
+          # Controlled catalogue rotation 19.09.2026:
+          # promote exact MASTER PLWP0110, demote redundant AQUATICA 9784281,
+          # and retire old RESERVE 9784284 while preserving 980/20/1000.
+          assert status["active"] == 980, status
+          assert status["reserve_configured"] == 20, status
+          assert status["pool_configured"] == 1000, status
+          assert "PLWP0110" in codes, codes
+          assert "9784281" not in codes, codes
+          assert any(r["sku"] == "9784281" and r["status"] == "RESERVE" for r in pool), pool
+          assert all(r["sku"] != "9784284" for r in pool), pool
+
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_1", snapshot
           assert snapshot["configured_sku_count"] == 96, snapshot
