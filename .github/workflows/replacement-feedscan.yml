@@ -198,4 +198,16 @@ jobs:
               for x in matches[:80]:
                   print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
               print(f"COUNT={len(matches)}")
+
+          print("=== SIGMA COMPOSITE CANDIDATES : SPADE ===")
+          for x in sorted([i for i in all_items if i["partner"]=="SIGMA" and i["available"] and ("перов" in i["n"] or "перь" in i["n"])], key=lambda z:z["sku"]):
+              print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
+
+          print("=== SIGMA COMPOSITE CANDIDATES : CONCRETE CYL ===")
+          for x in sorted([i for i in all_items if i["partner"]=="SIGMA" and i["available"] and ("бетон" in i["n"]) and ("циліндр" in i["n"] or "цилиндр" in i["n"])], key=lambda z:z["sku"]):
+              print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
+
+          print("=== SIGMA COMPOSITE CANDIDATES : METAL HSS-TIN ===")
+          for x in sorted([i for i in all_items if i["partner"]=="SIGMA" and i["available"] and ("метал" in i["n"]) and ("hss-tin" in i["n"] or "титан" in i["n"])], key=lambda z:z["sku"]):
+              print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
           PY
