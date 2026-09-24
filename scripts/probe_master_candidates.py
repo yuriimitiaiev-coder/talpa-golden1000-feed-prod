@@ -37,6 +37,45 @@ BLOCKED_PRIMARY = [
     "YT-82055", "YT-827722", "YT-82786", "YT-828461",
 ]
 
+SCORING = {
+    "1109-0872": [
+        (4, ["кром", "edge"]), (4, ["гіпс", "гипс", "drywall"]), (3, ["рубан", "plane"]),
+        (5, ["45"]), (2, ["фаск", "bevel"]),
+    ],
+    "1193101": [
+        (4, ["сверд", "сверл", "drill"]), (4, ["метал", "metal"]), (3, ["набір", "набор", "set"]),
+        (2, ["1–10", "1-10", "1.0-10.0", "1,0-10,0"]), (1, ["hss"]),
+    ],
+    "1303311": [
+        (5, ["перов", "spade"]), (4, ["сверд", "сверл", "drill"]), (3, ["дерев", "wood"]),
+        (3, ["набір", "набор", "set"]),
+    ],
+    "1719691": [
+        (4, ["сверд", "сверл", "drill"]), (4, ["бетон", "concrete"]), (3, ["набір", "набор", "set"]),
+        (2, ["4", "5", "6", "8", "10"]),
+    ],
+    "1602-2755": [
+        (5, ["sds-plus", "sds+"]), (4, ["бур"]), (4, ["бетон", "concrete"]),
+        (4, ["8x160", "8×160", "8х160"]),
+    ],
+    "YT-82055": [
+        (5, ["дриль", "дрель", "drill"]), (5, ["міксер", "миксер", "mixer"]),
+        (3, ["1200"]), (2, ["патрон", "chuck"]),
+    ],
+    "YT-827722": [
+        (6, ["перфоратор", "rotary hammer"]), (5, ["акум", "аккум", "cordless"]),
+        (4, ["sds-plus", "sds+"]), (3, ["18"]), (2, ["2.5", "2,5"]),
+    ],
+    "YT-82786": [
+        (5, ["шуруп", "driver"]), (4, ["дриль", "дрель", "drill"]), (4, ["удар", "impact"]),
+        (4, ["акум", "аккум", "cordless"]), (3, ["18"]), (2, ["40"]),
+    ],
+    "YT-828461": [
+        (6, ["акум", "аккум", "battery"]), (4, ["18"]), (3, ["2ah", "2 ah", "2а·год", "2 а"]),
+        (2, ["li-ion", "літій", "литий"]),
+    ],
+}
+
 KEYWORDS = {
     "1109-0872": ["45", "гіпсокарт", "кром", "рубан"],
     "YT-82055": ["дриль", "міксер"],
@@ -101,6 +140,27 @@ def main() -> None:
             rows.append(item(partner, sku, maps[partner].get(sku), rationale, "EXACT_CANDIDATE"))
         exact_results[primary] = rows
 
+    scored_results = {}
+    for primary, profile in SCORING.items():
+        matches = []
+        for partner, mp in maps.items():
+            for sku, el in mp.items():
+                hay = text_of(el)
+                score = 0
+                matched = []
+                for weight, variants in profile:
+                    if any(v.lower() in hay for v in variants):
+                        score += weight
+                        matched.append("/".join(variants))
+                if score <= 0:
+                    continue
+                rec = item(partner, sku, el, f"score={score}; " + "; ".join(matched), "FUNCTION_SCORE")
+                if rec["available"]:
+                    rec["score"] = score
+                    matches.append(rec)
+        matches.sort(key=lambda x: (-x["score"], x["partner"], x["sku"]))
+        scored_results[primary] = matches[:30]
+
     keyword_results = {}
     for primary, words in KEYWORDS.items():
         matches = []
@@ -120,6 +180,7 @@ def main() -> None:
         "purpose": "feed-backed candidate discovery for blocked MASTER v1.0 functions",
         "same_sku_sources": same_sku_sources,
         "exact_candidates": exact_results,
+        "scored_available_matches": scored_results,
         "keyword_available_matches": keyword_results,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
