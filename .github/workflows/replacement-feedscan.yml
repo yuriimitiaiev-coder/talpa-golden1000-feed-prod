@@ -150,4 +150,41 @@ jobs:
               for x in matches[:40]:
                   print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
               print(f"COUNT={len(matches)}")
+
+          broad_groups = {
+              "BROAD_CORDLESS_DRILL_DRIVER": lambda x: (
+                  ("шуруп" in x["n"] or "driver" in x["n"] or "drill" in x["n"] or "дрил" in x["n"] or "дрел" in x["n"]) and
+                  ("акум" in x["n"] or "аккум" in x["n"] or "cordless" in x["n"] or "18v" in x["n"] or "18 в" in x["n"])
+              ),
+              "BROAD_ROTARY_HAMMER": lambda x: (
+                  "перфорат" in x["n"] or "rotary hammer" in x["n"] or
+                  (("hammer" in x["n"]) and ("sds" in x["n"]))
+              ),
+              "BROAD_BATTERY": lambda x: (
+                  "акумулятор" in x["n"] or "аккумулятор" in x["n"] or "battery" in x["n"]
+              ),
+              "BROAD_MIXER": lambda x: (
+                  "міксер" in x["n"] or "миксер" in x["n"] or "mixer" in x["n"]
+              ),
+              "BROAD_DRYWALL_EDGE": lambda x: (
+                  "гіпс" in x["n"] or "гипс" in x["n"] or "drywall" in x["n"] or "gypsum" in x["n"]
+              ),
+              "BROAD_DRILL_SET": lambda x: (
+                  ("набір" in x["n"] or "набор" in x["n"] or "set" in x["n"]) and
+                  ("сверд" in x["n"] or "сверл" in x["n"] or "drill" in x["n"] or "bit" in x["n"])
+              ),
+              "EXACT_8X160_SDS": lambda x: (
+                  ("sds" in x["n"]) and
+                  re.search(r"(?<!\\d)8\\s*x\\s*160(?!\\d)", x["n"]) is not None
+              ),
+          }
+          for label, pred in broad_groups.items():
+              print(f"=== {label} : AVAILABLE MATCHES ===")
+              matches = [x for x in all_items if x["available"] and pred(x)]
+              matches.sort(key=lambda x: (x["partner"], x["sku"]))
+              if not matches:
+                  print("NONE")
+              for x in matches[:80]:
+                  print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
+              print(f"COUNT={len(matches)}")
           PY
