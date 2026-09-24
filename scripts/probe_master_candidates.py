@@ -32,6 +32,11 @@ EXACT = {
     ],
 }
 
+BLOCKED_PRIMARY = [
+    "1193101", "1303311", "1719691", "1109-0872", "1602-2755",
+    "YT-82055", "YT-827722", "YT-82786", "YT-828461",
+]
+
 KEYWORDS = {
     "1109-0872": ["45", "гіпсокарт", "кром", "рубан"],
     "YT-82055": ["дриль", "міксер"],
@@ -82,6 +87,13 @@ def main() -> None:
         "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
     }
 
+    same_sku_sources = {}
+    for primary in BLOCKED_PRIMARY:
+        rows = []
+        for partner, mp in maps.items():
+            rows.append(item(partner, primary, mp.get(primary), "same PRIMARY SKU in another connected feed", "A2_SAME_SKU"))
+        same_sku_sources[primary] = rows
+
     exact_results = {}
     for primary, candidates in EXACT.items():
         rows = []
@@ -106,6 +118,7 @@ def main() -> None:
         "schema_version": 1,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "purpose": "feed-backed candidate discovery for blocked MASTER v1.0 functions",
+        "same_sku_sources": same_sku_sources,
         "exact_candidates": exact_results,
         "keyword_available_matches": keyword_results,
     }
