@@ -41,7 +41,7 @@ jobs:
           sys.path.insert(0, str(Path("scripts").resolve()))
           from pool_common import (
               SIGMA_URL, ZA_URL, TEKNOSEL_URL, GRAND_URL, GPL_URL,
-              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map, load_pool,
           )
 
           maps = {
@@ -210,4 +210,15 @@ jobs:
           print("=== SIGMA COMPOSITE CANDIDATES : METAL HSS-TIN ===")
           for x in sorted([i for i in all_items if i["partner"]=="SIGMA" and i["available"] and ("метал" in i["n"]) and ("hss-tin" in i["n"] or "титан" in i["n"])], key=lambda z:z["sku"]):
               print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
+
+          print("=== CURRENT RESERVE LIVE STATUS ===")
+          by_key={(x["partner"],x["sku"]):x for x in all_items}
+          for row in load_pool():
+              if row["status"] != "RESERVE":
+                  continue
+              x=by_key.get((row["supplier"],row["sku"]))
+              if x:
+                  print("RESERVE|{partner}|{sku}|available={available}|qty={qty}|price={price}|{name}".format(**x))
+              else:
+                  print(f"RESERVE|{row['supplier']}|{row['sku']}|NOT_FOUND_IN_LIVE_FEED|{row.get('fallback_name','')}")
           PY
