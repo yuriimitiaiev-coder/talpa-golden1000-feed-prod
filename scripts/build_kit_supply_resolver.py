@@ -331,7 +331,7 @@ def write_kit_supply_resolver(
     }
     payload: dict[str, object] = {
         "schema_version": 1,
-        "source_master": "TALPA_KIT_MASTER_FINAL_v1_1",
+        "source_master": "TALPA_KIT_MASTER_FINAL_v1_0",
         "source_substitution_registry": SUBSTITUTES_CSV.name,
         "policy": "APPROVED_SUPPLIERS_ONLY",
         "approved_suppliers": sorted(APPROVED_KIT_SUPPLIERS),
