@@ -43,6 +43,16 @@ jobs:
           DOWNLOAD_TIMEOUT_SECONDS: "120"
         run: python scripts/build_pool_feed.py
 
+      - name: Probe feed-backed candidates for remaining BLOCKED functions
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: python scripts/probe_master_candidates.py > /tmp/master_candidate_probe.log
+
       - name: Validate resolver contract
         run: |
           test -s docs/golden1000.xml
@@ -151,4 +161,5 @@ jobs:
             docs/kit_price_snapshot.json
             docs/kit_supply_resolver.json
             docs/status.json
+            docs/master_candidate_probe.json
           retention-days: 3
