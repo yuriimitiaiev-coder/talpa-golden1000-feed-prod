@@ -1,8 +1,8 @@
-# TALPA KIT — Functional Substitution Policy v1.1
+# TALPA KIT — Functional Substitution Policy v1.2
 
 Status: APPROVED
-Effective date: 2026-09-16
-Frozen master source: TALPA_KIT_MASTER_FINAL_v1_1
+Effective date: 2026-09-24
+Frozen master source: TALPA_KIT_MASTER_FINAL_v1_0
 
 ## 1. Purpose
 
@@ -83,7 +83,7 @@ Never remove the old card before the replacement has been confirmed in Prom.
 
 ## 9. MASTER integrity
 
-TALPA_KIT_MASTER_FINAL_v1_1 is not modified by operational substitutions.
+TALPA_KIT_MASTER_FINAL_v1_0 is not modified by operational substitutions.
 The resolver must distinguish FEED UNAVAILABLE from true ORDER BLOCKED.
 
 ## 10. Current decision principle
@@ -103,19 +103,20 @@ A SKU that is unavailable and has no safe live replacement must not permanently 
 - If a RESERVED MASTER returns to stock or receives an approved A/B/C/D replacement, it may be promoted back to ACTIVE through the controlled rotation process.
 - Moving a MASTER SKU to RESERVE changes only publication state; it does not remove the SKU from the frozen MASTER or cancel its ORDER READY substitution route.
 
-## 12. FINAL v1.1 scope
+## 12. Current v1.0 operational scope
 
-TALPA_KIT_MASTER_FINAL_v1_1 supersedes v1.0 for current KIT configuration; v1.0 remains an immutable historical baseline.
+TALPA_KIT_MASTER_FINAL_v1_0 is the frozen Source of Truth with 99 unique PRIMARY MASTER SKU.
 
-Permanent v1.1 PRIMARY replacements:
+Temporary stock problems never rewrite that MASTER. All operational deviations are recorded only in `sources/master_live_substitutes.csv` as `PRIMARY MASTER SKU -> LIVE SUBSTITUTE`.
+
+The former FINAL v1.1 96-SKU model is retained only as historical evidence of a prior replacement experiment and is not the current production Source of Truth.
+
+Previously validated operational routes are fallbacks, not MASTER replacements:
 - 20039 -> RM 418 1800
 - EHF0500 -> 4316051
 - 8316755 -> 20101
 - 50478 -> 1105-0349
+- 9419111 -> function covered by 9417491 when PRIMARY is unavailable
+- 9419311 -> function covered by 9417491 when PRIMARY is unavailable
 
-Approved removals from the standard KIT MASTER:
-- 9419111 — separate P2 spare set removed because the standard 9417491 half-mask package already includes P2 elements;
-- 9419311 — separate spare holders removed from the standard KIT;
-- 1109-0872 — removed from standard KIT-02 and retained only as OPTIONAL / manual-quote functionality when feed-backed stock is confirmed.
-
-FINAL v1.1 target list contains 96 unique PRIMARY MASTER SKU.
+1109-0872 remains HOLD until an approved feed-backed 45-degree route is actually quoteable.
