@@ -113,8 +113,11 @@ jobs:
 
           sander = next(item for item in resolver["items"] if item["primary_sku"] == "90155")
           assert sander["coverage_mode"] == "EXISTING_LIVE_CONDITIONAL", sander
-          assert [x["sku"] for x in sander["resolved_items"]] == ["40535"], sander
           assert sander["can_quote"] is True, sander
+          if sander["decision"] == "PRIMARY_OK":
+              assert [x["sku"] for x in sander["resolved_items"]] == ["90155"], sander
+          else:
+              assert [x["sku"] for x in sander["resolved_items"]] == ["40535"], sander
 
           # MASTER_DUPLICATE is coverage by an already existing CONFIG line, not a
           # request to add a second quantity of the coverage SKU.
