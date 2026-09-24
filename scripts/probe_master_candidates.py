@@ -174,6 +174,28 @@ def main() -> None:
         matches.sort(key=lambda x: (x["partner"], x["sku"]))
         keyword_results[primary] = matches[:40]
 
+    inventory_specs = {
+        "drills_and_drivers": ["дрил", "дрель", "шуруп"],
+        "rotary_hammers": ["перфоратор"],
+        "18v_batteries": ["акумулятор", "аккумулятор", "battery"],
+        "mixers": ["міксер", "миксер", "mixer"],
+        "drill_bits": ["сверд", "сверл", "бур"],
+        "drywall_edge": ["гіпс", "гипс", "drywall", "кром"],
+    }
+    keyword_inventory = {}
+    for label, needles in inventory_specs.items():
+        rows = []
+        for partner, mp in maps.items():
+            for sku, el in mp.items():
+                rec = item(partner, sku, el, label, "CATALOG_INVENTORY")
+                if not rec["available"]:
+                    continue
+                name = rec["name"].lower()
+                if any(n in name for n in needles):
+                    rows.append(rec)
+        rows.sort(key=lambda x: (x["partner"], x["sku"]))
+        keyword_inventory[label] = rows[:250]
+
     payload = {
         "schema_version": 1,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -181,6 +203,7 @@ def main() -> None:
         "same_sku_sources": same_sku_sources,
         "exact_candidates": exact_results,
         "scored_available_matches": scored_results,
+        "available_catalog_inventory": keyword_inventory,
         "keyword_available_matches": keyword_results,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
