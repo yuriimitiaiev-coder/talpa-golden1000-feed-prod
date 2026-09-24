@@ -1,0 +1,153 @@
+name: Replacement 9 live feed scan
+
+on:
+  push:
+    branches:
+      - audit/replacement-9-feedscan-20260924
+    paths:
+      - ".github/workflows/replacement-feedscan.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Scan approved live feeds
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import (
+              SIGMA_URL, ZA_URL, TEKNOSEL_URL, GRAND_URL, GPL_URL,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+          )
+
+          maps = {
+              "SIGMA": supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA"),
+              "ZAINSTRUMENTOM": supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom"),
+              "TEKNOSEL": google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL"),
+              "GRANDINSTRUMENT": supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument"),
+              "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
+          }
+
+          explicit = {
+              "1193101","1191712",
+              "1303311","1314665",
+              "1719691",
+              "1602-2755","1811121",
+              "YT-82055",
+              "YT-82786","YT-82787","YT-82790","YT-82791","YT-827791",
+              "YT-827722","YT-827723","YT-827724","YT-827725","YT-827726","YT-82770",
+              "YT-828461","YT-82842","YT-82843","YT-82844",
+              "1109-0872","1109-0870",
+          }
+
+          def txt(o, tag):
+              return (o.findtext(tag) or "").strip()
+
+          def norm(s):
+              return (s or "").lower().replace("×","x").replace("х","x").replace("–","-").replace("—","-")
+
+          def item(partner, sku, o):
+              name = txt(o,"name_ua") or txt(o,"name")
+              return {
+                  "partner": partner,
+                  "sku": sku,
+                  "available": o.get("available") == "true",
+                  "qty": txt(o,"quantity_in_stock"),
+                  "price": txt(o,"price"),
+                  "vendor": txt(o,"vendor"),
+                  "name": name,
+                  "n": norm(name),
+              }
+
+          all_items = []
+          for partner, mp in maps.items():
+              for sku, o in mp.items():
+                  all_items.append(item(partner, sku, o))
+
+          print("=== EXPLICIT SKU CHECK ===")
+          for sku in sorted(explicit):
+              hits = [x for x in all_items if x["sku"] == sku]
+              if not hits:
+                  print(f"EXPLICIT|{sku}|NOT_FOUND_IN_APPROVED_FEEDS")
+              for x in hits:
+                  print("EXPLICIT|{partner}|{sku}|available={available}|qty={qty}|price={price}|{name}".format(**x))
+
+          groups = {
+              "METAL_DRILL_SET_1_10": lambda x: (
+                  ("сверд" in x["n"] or "сверл" in x["n"]) and
+                  ("метал" in x["n"]) and
+                  ("набір" in x["n"] or "набор" in x["n"]) and
+                  ("1.0-10.0" in x["n"] or "1-10" in x["n"] or "1,0-10,0" in x["n"] or "19шт" in x["n"] or "19 шт" in x["n"])
+              ),
+              "SPADE_SET_10_25": lambda x: (
+                  ("перов" in x["n"]) and ("набір" in x["n"] or "набор" in x["n"]) and
+                  all(t in x["n"] for t in ["10","12","16","18","20","25"])
+              ),
+              "CONCRETE_DRILL_SET": lambda x: (
+                  ("бетон" in x["n"]) and ("набір" in x["n"] or "набор" in x["n"]) and
+                  ("сверд" in x["n"] or "сверл" in x["n"])
+              ),
+              "SDS_PLUS_8X160": lambda x: (
+                  ("sds" in x["n"]) and ("8x160" in x["n"] or ("8" in x["n"] and "160" in x["n"])) and
+                  ("бур" in x["n"] or "сверд" in x["n"] or "сверл" in x["n"])
+              ),
+              "POWER_MIXER": lambda x: (
+                  ("міксер" in x["n"] or "миксер" in x["n"]) and
+                  ("дрил" in x["n"] or "дрел" in x["n"] or "1200" in x["n"] or "1400" in x["n"] or "1600" in x["n"])
+              ),
+              "IMPACT_DRILL_18V": lambda x: (
+                  ("18 в" in x["n"] or "18v" in x["n"]) and
+                  ("дрил" in x["n"] or "дрел" in x["n"]) and
+                  ("шуруп" in x["n"]) and
+                  ("удар" in x["n"])
+              ),
+              "ROTARY_HAMMER_18V": lambda x: (
+                  ("18 в" in x["n"] or "18v" in x["n"]) and
+                  ("перфорат" in x["n"] or "rotary hammer" in x["n"]) and
+                  ("sds" in x["n"])
+              ),
+              "BATTERY_18V": lambda x: (
+                  ("18 в" in x["n"] or "18v" in x["n"]) and
+                  ("акумулятор" in x["n"] or "аккумулятор" in x["n"] or "battery" in x["n"])
+              ),
+              "DRYWALL_45": lambda x: (
+                  ("45" in x["n"]) and
+                  ("гіпс" in x["n"] or "гипс" in x["n"] or "drywall" in x["n"]) and
+                  ("кром" in x["n"] or "фаск" in x["n"] or "рубан" in x["n"] or "planer" in x["n"])
+              ),
+          }
+
+          for label, pred in groups.items():
+              print(f"=== {label} : AVAILABLE MATCHES ===")
+              matches = [x for x in all_items if x["available"] and pred(x)]
+              matches.sort(key=lambda x: (x["partner"], x["sku"]))
+              if not matches:
+                  print("NONE")
+              for x in matches[:40]:
+                  print("{partner}|{sku}|qty={qty}|price={price}|{name}".format(**x))
+              print(f"COUNT={len(matches)}")
+          PY
