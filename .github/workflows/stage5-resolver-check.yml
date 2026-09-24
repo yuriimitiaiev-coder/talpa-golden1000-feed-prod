@@ -131,6 +131,24 @@ jobs:
 
           # MASTER_DUPLICATE is coverage by an already existing CONFIG line, not a
           # request to add a second quantity of the coverage SKU.
+          sds8 = next(item for item in resolver["items"] if item["primary_sku"] == "1602-2755")
+          assert sds8["decision"] == "SUBSTITUTE", sds8
+          assert sds8["line_action"] == "REPLACE_1_TO_1", sds8
+          assert sds8["coverage_mode"] == "LIVE_SUBSTITUTE_CONDITIONAL", sds8
+          assert [x["sku"] for x in sds8["resolved_items"]] == ["1811131"], sds8
+          assert sds8["can_quote"] is True, sds8
+
+          status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
+          assert status["active"] == 980, status
+          assert status["reserve_configured"] == 20, status
+          assert status["pool_configured"] == 1000, status
+
+          from lxml import etree
+          root = etree.parse("docs/golden1000.xml").getroot()
+          codes = [(o.findtext("vendorCode") or "").strip() for o in root.find("shop").find("offers").findall("offer")]
+          assert "1811131" in codes, codes
+          assert "1602-2755" not in codes, codes
+
           duplicate = next(item for item in resolver["items"] if item["primary_sku"] == "9419111")
           assert duplicate["coverage_mode"] == "MASTER_DUPLICATE", duplicate
           assert duplicate["line_action"] == "REQUIRE_EXISTING_COVERAGE", duplicate

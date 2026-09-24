@@ -3,7 +3,7 @@ primary_master_sku,master_supplier,live_coverage,coverage_mode,status,as_of,note
 1109-0872,ZAINSTRUMENTOM,,HOLD,HOLD,2026-09-24,"Exact 45° drywall-edge function retained in MASTER v1.0; old 30° fallback is not accepted by the 24.09 audit. Require exact or approved feed-backed equivalent."
 1193101,SIGMA,,HOLD,HOLD,2026-09-24,"PRIMARY missing from live feed. Candidate for separate feed probe: ULTRA 1191712, 19 pc, 1.0-10.0 mm."
 1303311,SIGMA,,HOLD,HOLD,2026-09-24,"PRIMARY missing from live feed. Candidate for separate feed probe: GRAD 1314665, same 10/12/16/18/20/25 mm spade set."
-1602-2755,ZAINSTRUMENTOM,,HOLD,HOLD,2026-09-24,"TAJIMA SDS-plus 8x160 unavailable. Candidate for separate feed probe/activation: SIGMA 1811121, SDS-plus 8x160."
+1602-2755,ZAINSTRUMENTOM,1811131,LIVE_SUBSTITUTE_CONDITIONAL,ACTIVE,2026-09-24,"Feed-backed SIGMA SDS-plus Ø8×210 mm preserves 8 mm diameter and SDS-plus interface; +50 mm length versus PRIMARY 8×160 is an explicit conditional difference."
 1719691,SIGMA,,HOLD,HOLD,2026-09-24,"PRIMARY missing from live feed; preserve 4/5/6/8/10 mm cylindrical concrete-drill function. Candidate composite/direct replacement requires feed validation."
 20039,ZAINSTRUMENTOM,RM 418 1800,LIVE_SUBSTITUTE_CONDITIONAL,ACTIVE,2026-09-08,"Live-feed-confirmed Linzer paint tray 18 in / 45 cm instead of 300 mm Rollingdog tray."
 50478,ZAINSTRUMENTOM,1105-0349,EXISTING_LIVE_CONDITIONAL,ACTIVE,2026-09-08,"Scraping function covered; not all original 10-in-1 functions."
