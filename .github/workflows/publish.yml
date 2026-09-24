@@ -104,10 +104,10 @@ jobs:
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
           assert snapshot["configured_sku_count"] == 99, snapshot
-          assert len(snapshot["items"]) == 96, snapshot
+          assert len(snapshot["items"]) == 99, snapshot
           assert snapshot["counts_by_partner"] == {
-              "GRANDINSTRUMENT": 35,
-              "SIGMA": 35,
+              "GRANDINSTRUMENT": 36,
+              "SIGMA": 37,
               "ZAINSTRUMENTOM": 26,
           }, snapshot
           snapshot_keys = [
@@ -155,7 +155,7 @@ jobs:
               else:
                   assert item["decision"] == "HOLD", item
                   assert item["line_action"] == "BLOCK", item
-          assert len(set(resolver_skus)) == 96, resolver_skus
+          assert len(set(resolver_skus)) == 99, resolver_skus
 
           # Frozen FINAL v1.0 integrity checks.
           # Operational substitutions must never rewrite the 99 PRIMARY MASTER set.
