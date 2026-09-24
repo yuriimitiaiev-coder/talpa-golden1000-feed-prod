@@ -157,7 +157,7 @@ def write_kit_price_snapshot(
 
     payload: dict[str, object] = {
         "schema_version": 1,
-        "source_master": "TALPA_KIT_MASTER_FINAL_v1_1",
+        "source_master": "TALPA_KIT_MASTER_FINAL_v1_0",
         "generated_at_utc": generated_at,
         "configured_sku_count": len(targets),
         "found_count": sum(bool(item["found"]) for item in items),

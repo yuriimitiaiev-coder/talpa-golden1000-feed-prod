@@ -4,7 +4,7 @@ name: Validate TALPA Stage 5 supply resolver
 on:
   workflow_dispatch:
   push:
-    branches: [stage5-supply-resolver]
+    branches: [master-v1-0-live-20260924]
     paths:
       - "pool/**"
       - "scripts/**"
@@ -101,12 +101,20 @@ jobs:
                   assert item["line_action"] == "BLOCK", item
           assert len(set(primary_skus)) == 99, primary_skus
 
-          # Current policy acceptance: the retired YT-82786 drill must remain blocked
-          # until an approved + live + available replacement exists.
+          # 24.09 acceptance: safety-critical unresolved routes remain fail-closed.
           drill = next(item for item in resolver["items"] if item["primary_sku"] == "YT-82786")
           assert drill["decision"] == "HOLD", drill
           assert drill["line_action"] == "BLOCK", drill
           assert drill["can_quote"] is False, drill
+
+          edge = next(item for item in resolver["items"] if item["primary_sku"] == "1109-0872")
+          assert edge["decision"] == "HOLD", edge
+          assert edge["line_action"] == "BLOCK", edge
+
+          sander = next(item for item in resolver["items"] if item["primary_sku"] == "90155")
+          assert sander["coverage_mode"] == "EXISTING_LIVE_CONDITIONAL", sander
+          assert [x["sku"] for x in sander["resolved_items"]] == ["40535"], sander
+          assert sander["can_quote"] is True, sander
 
           # MASTER_DUPLICATE is coverage by an already existing CONFIG line, not a
           # request to add a second quantity of the coverage SKU.

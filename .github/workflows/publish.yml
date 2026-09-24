@@ -102,30 +102,30 @@ jobs:
           assert all(r["sku"] != "9784284" for r in pool), pool
 
           assert snapshot["schema_version"] == 1, snapshot
-          assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_1", snapshot
-          assert snapshot["configured_sku_count"] == 96, snapshot
-          assert len(snapshot["items"]) == 96, snapshot
+          assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
+          assert snapshot["configured_sku_count"] == 99, snapshot
+          assert len(snapshot["items"]) == 99, snapshot
           assert snapshot["counts_by_partner"] == {
-              "GRANDINSTRUMENT": 35,
-              "SIGMA": 35,
+              "GRANDINSTRUMENT": 36,
+              "SIGMA": 37,
               "ZAINSTRUMENTOM": 26,
           }, snapshot
           snapshot_keys = [
               (item["partner"], item["sku"])
               for item in snapshot["items"]
           ]
-          assert len(set(snapshot_keys)) == 96, snapshot_keys
+          assert len(set(snapshot_keys)) == 99, snapshot_keys
           assert snapshot["found_count"] + snapshot["missing_count"] == 96, snapshot
 
           assert resolver["schema_version"] == 1, resolver
-          assert resolver["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_1", resolver
+          assert resolver["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", resolver
           assert resolver["source_substitution_registry"] == "master_live_substitutes.csv", resolver
           assert resolver["policy"] == "APPROVED_SUPPLIERS_ONLY", resolver
           assert resolver["approved_suppliers"] == ["GRANDINSTRUMENT", "SIGMA", "ZAINSTRUMENTOM"], resolver
-          assert resolver["configured_sku_count"] == 96, resolver
-          assert len(resolver["items"]) == 96, resolver
-          assert sum(resolver["decision_counts"].values()) == 96, resolver
-          assert sum(resolver["line_action_counts"].values()) == 96, resolver
+          assert resolver["configured_sku_count"] == 99, resolver
+          assert len(resolver["items"]) == 99, resolver
+          assert sum(resolver["decision_counts"].values()) == 99, resolver
+          assert sum(resolver["line_action_counts"].values()) == 99, resolver
           assert resolver["quoteable_count"] + resolver["blocked_count"] == 96, resolver
 
           allowed_decisions = {"PRIMARY_OK", "SUBSTITUTE", "COMPOSITE", "HOLD"}
@@ -157,21 +157,18 @@ jobs:
                   assert item["line_action"] == "BLOCK", item
           assert len(set(resolver_skus)) == 96, resolver_skus
 
-          # FINAL v1.1 integrity checks.
+          # Frozen MASTER v1.0 integrity checks — operational substitutions do not rewrite PRIMARY.
           final_primary = set(resolver_skus)
-          for sku in {"4316051", "20101", "1105-0349", "RM 418 1800"}:
+          for sku in {"1109-0872", "20039", "50478", "8316755", "9419111", "EHF0500"}:
               assert sku in final_primary, (sku, final_primary)
-          for retired in {"EHF0500", "8316755", "50478", "20039", "9419111", "9419311", "1109-0872"}:
-              assert retired not in final_primary, (retired, final_primary)
+          for operational_only in {"4316051", "20101", "1105-0349", "RM 418 1800"}:
+              assert operational_only not in final_primary, (operational_only, final_primary)
 
           # Remaining unresolved drill is still fail-closed.
           drill = next(item for item in resolver["items"] if item["primary_sku"] == "YT-82786")
           assert drill["decision"] == "HOLD", drill
           assert drill["line_action"] == "BLOCK", drill
           assert drill["can_quote"] is False, drill
-
-          hacksaw = next(item for item in resolver["items"] if item["primary_sku"] == "HSP0300")
-          assert hacksaw["can_quote"] is True, hacksaw
 
           print(json.dumps(status, ensure_ascii=False, indent=2))
           print(json.dumps({

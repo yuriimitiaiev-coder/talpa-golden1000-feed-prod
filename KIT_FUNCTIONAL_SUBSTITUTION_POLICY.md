@@ -1,121 +1,80 @@
-# TALPA KIT — Functional Substitution Policy v1.1
+# TALPA KIT — Functional Substitution Policy v1.2
 
 Status: APPROVED
-Effective date: 2026-09-16
-Frozen master source: TALPA_KIT_MASTER_FINAL_v1_1
+Effective date: 2026-09-24
+Frozen MASTER source: TALPA_KIT_MASTER_FINAL_v1_0
+Frozen MASTER scope: 99 unique PRIMARY SKU
 
-## 1. Purpose
+## 1. Source of Truth
 
-The frozen MASTER remains the ideal TALPA KIT composition and is not rewritten because of temporary stock problems.
+TALPA_KIT_MASTER_FINAL_v1_0 remains the frozen current MASTER for this operational rollout.
+Temporary stock problems never rewrite the MASTER.
+Any permanent structural MASTER change requires a separately approved new revision.
 
-Operational readiness answers a different question: can TALPA execute a real KIT order today without losing the core function of the KIT?
+The earlier repository FINAL v1.1 / 96-SKU implementation is retained as historical work and is not the active MASTER source for this rollout.
 
-## 2. Readiness states
+## 2. Daily operational objective
 
-- MASTER READY — the PRIMARY MASTER SKU is quoteable through the normal approved live supplier channel.
-- ORDER READY — the PRIMARY is unavailable, but an approved substitution path can execute the order.
-- BLOCKED — neither the PRIMARY nor an approved substitution path can safely execute the order.
+100% of MASTER functions should be executable with products that TALPA can actually supply today.
+Golden1000 remains exactly 1000 configured SKU and uses the controlled ACTIVE/RESERVE architecture.
 
-## 3. Substitution ladder
+## 3. Decision sequence for an unavailable PRIMARY
 
-Always use the best available level and stop at the first safe level:
+1. Identify the PRIMARY function in its KIT.
+2. Check whether another available MASTER SKU already fully covers the function.
+3. If yes, record FUNCTION COVERED / MASTER_DUPLICATE and do not create redundant quantity.
+4. If no, find the closest functionally equivalent available item from approved supplier channels.
+5. Record temporary coverage only in PRIMARY MASTER SKU -> LIVE SUBSTITUTE logic.
+6. Keep the frozen MASTER unchanged.
+7. Do not let an unavailable product permanently consume an ACTIVE publication slot if its function can be covered safely.
 
-- A1 PRIMARY — original MASTER SKU from its normal approved supplier channel.
-- A2 SAME SKU / ALTERNATIVE SOURCE — the same MASTER SKU from another verified source.
-- B EQUIVALENT — another SKU with the same core function and materially equivalent critical parameters.
-- C FUNCTIONAL — technically different product that still performs the core job of the KIT.
-- D DEGRADED / CONDITIONAL — acceptable operational compromise; the limitation must be explicit.
-- HOLD / BLOCKED — no safe operational coverage.
+## 4. Substitution ladder
 
-A2/C/D emergency sourcing does not automatically require permanent inclusion in Golden1000.
+- A1 PRIMARY — original MASTER SKU in its normal approved live feed.
+- A2 SAME SKU / ALTERNATIVE SOURCE — same SKU through a verified source; order route only unless feed-backed for publication.
+- B EQUIVALENT — same core function and materially equivalent critical parameters.
+- C FUNCTIONAL — different implementation but preserves the required job.
+- D DEGRADED / CONDITIONAL — usable compromise with explicit limitation.
+- FUNCTION COVERED / MASTER_DUPLICATE — another existing MASTER line already provides the full required function.
+- HOLD / BLOCKED — no safe current coverage.
 
-For permanent Golden1000 ACTIVE publication, the SKU must also be present in the corresponding live supplier feed or have an already-existing safe fallback card. Website availability alone is sufficient only for an order-execution route, not for automatic feed publication.
+## 5. Publication rule
 
-## 4. Evaluation fields
+Website or market availability alone is not sufficient for automatic Golden1000 ACTIVE publication.
+A substitute may become an ACTIVE Prom product only when it is verified in an approved live supplier feed (or an already approved safe fallback card) and passes build/validation.
 
-Each MASTER substitution decision must state:
+Controlled rollout:
+1. activate/create replacement;
+2. build and validate;
+3. deploy;
+4. confirm the replacement exists and is available in Prom;
+5. only then demote the unavailable old publication slot;
+6. preserve 980 ACTIVE + 20 RESERVE = 1000 configured.
 
-- CORE FUNCTION — what job the item must perform in the KIT.
-- HARD CONSTRAINTS — characteristics that cannot be lost.
-- SOFT CONSTRAINTS — characteristics that may be relaxed.
-- MAX SUBSTITUTION LEVEL — highest permissible level A2/B/C/D.
-- COVERAGE SKU(S) — one or more approved items used to cover the function.
-- LIMITATION / NOTE — explicit compromise, if any.
+## 6. Approved suppliers for MASTER resolver
 
-## 5. Functional rule
+Priority for sourcing/audit:
+SIGMA / ZaInstrumentom / GPL / TEKNOSEL / Grand Instrument / other approved sources.
 
-Preserve the outcome of the work, not necessarily every implementation detail.
+The automated KIT resolver currently accepts feed-backed coverage from:
+GRANDINSTRUMENT / SIGMA / ZAINSTRUMENTOM.
 
-Examples:
-- cordless drill -> corded drill may be level C when mobility is not a hard KIT requirement;
-- cordless SDS-plus rotary hammer -> corded SDS-plus may be level C when impact drilling is the core function;
-- 8 mm drill bit -> 10 mm drill bit is not acceptable when hole diameter is a hard constraint;
-- a battery from another ecosystem is not acceptable when compatibility is a hard constraint.
+## 7. Composite coverage
 
-## 6. Composite coverage
+One PRIMARY line may be covered by multiple live SKU only when the combined set preserves the required function.
+Every component must be quoteable at the time of the order.
 
-One MASTER line may be covered by multiple live SKUs when the combined set preserves the required function. Such coverage must be marked COMPOSITE and every component must be quoteable.
+## 8. Hard constraints
 
-## 7. Source hierarchy
+Dimensions, interface/compatibility, voltage ecosystem, shank type, required diameter, safety class and other function-critical parameters may not be silently relaxed.
+A degraded route must state the limitation explicitly.
 
-For an incoming order check in this order:
+## 9. Fail-closed principle
 
-1. A1 — normal approved supplier feed.
-2. A2 — same SKU from a verified alternative source.
-3. B — equivalent item from an approved/verified source.
-4. C — functional substitute.
-5. D — degraded/conditional substitute.
-6. HOLD/BLOCKED.
+If neither PRIMARY nor an approved live route is quoteable, the resolver returns HOLD/BLOCK.
+A missing SKU is not automatically a blocked KIT; loss of function after exhausting safe coverage routes is BLOCKED.
 
-Before confirming an A2/C/D order, verify current price, stock, delivery time, and KIT margin.
+## 10. Change control
 
-## 8. Golden1000 rollout rule
-
-For a new substitute that must become a Prom product:
-
-1. activate/create the substitute first;
-2. build, validate and deploy;
-3. confirm it exists and is available in Prom;
-4. only then move the unavailable old SKU to RESERVE;
-5. return to the steady state 980 ACTIVE + 20 RESERVE.
-
-Never remove the old card before the replacement has been confirmed in Prom.
-
-## 9. MASTER integrity
-
-TALPA_KIT_MASTER_FINAL_v1_1 is not modified by operational substitutions.
-The resolver must distinguish FEED UNAVAILABLE from true ORDER BLOCKED.
-
-## 10. Current decision principle
-
-A missing SKU is not by itself a blocked KIT.
-Only loss of the required function after exhausting A1 -> A2 -> B -> C -> D is BLOCKED.
-
-## 11. ACTIVE/RESERVE rule for unavailable MASTER and non-replaceable items
-
-A SKU that is unavailable and has no safe live replacement must not permanently consume one of the 980 ACTIVE publication slots.
-
-- Keep the frozen MASTER definition unchanged.
-- Move the unavailable SKU to RESERVE rather than deleting it.
-- RESERVE is the controlled holding area for HOLD/BLOCKED MASTER items, unavailable items awaiting stock recovery, and approved return candidates.
-- Use the freed ACTIVE slot for an available, validated SKU.
-- Maintain the steady-state architecture at 980 ACTIVE + 20 RESERVE.
-- If a RESERVED MASTER returns to stock or receives an approved A/B/C/D replacement, it may be promoted back to ACTIVE through the controlled rotation process.
-- Moving a MASTER SKU to RESERVE changes only publication state; it does not remove the SKU from the frozen MASTER or cancel its ORDER READY substitution route.
-
-## 12. FINAL v1.1 scope
-
-TALPA_KIT_MASTER_FINAL_v1_1 supersedes v1.0 for current KIT configuration; v1.0 remains an immutable historical baseline.
-
-Permanent v1.1 PRIMARY replacements:
-- 20039 -> RM 418 1800
-- EHF0500 -> 4316051
-- 8316755 -> 20101
-- 50478 -> 1105-0349
-
-Approved removals from the standard KIT MASTER:
-- 9419111 — separate P2 spare set removed because the standard 9417491 half-mask package already includes P2 elements;
-- 9419311 — separate spare holders removed from the standard KIT;
-- 1109-0872 — removed from standard KIT-02 and retained only as OPTIONAL / manual-quote functionality when feed-backed stock is confirmed.
-
-FINAL v1.1 target list contains 96 unique PRIMARY MASTER SKU.
+Analysis -> decision matrix -> approval -> controlled package -> build/validate -> deploy -> fresh Prom export -> acceptance audit.
+Production changes are not made from an unapproved replacement list.
