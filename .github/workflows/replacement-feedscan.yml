@@ -177,6 +177,17 @@ jobs:
                   ("sds" in x["n"]) and
                   re.search(r"(?<!\\d)8\\s*x\\s*160(?!\\d)", x["n"]) is not None
               ),
+              "ANY_DRILL": lambda x: (
+                  "дрил" in x["n"] or "дрел" in x["n"] or "drill" in x["n"]
+              ),
+              "ANY_IMPACT_DRILL": lambda x: (
+                  ("дрил" in x["n"] or "дрел" in x["n"] or "drill" in x["n"]) and
+                  ("удар" in x["n"] or "impact" in x["n"])
+              ),
+              "ANY_CORDED_MIXING_POWER": lambda x: (
+                  ("дрил" in x["n"] or "дрел" in x["n"] or "mixer" in x["n"] or "міксер" in x["n"] or "миксер" in x["n"]) and
+                  ("вт" in x["n"] or "w " in x["n"] or "w," in x["n"] or "w)" in x["n"])
+              ),
           }
           for label, pred in broad_groups.items():
               print(f"=== {label} : AVAILABLE MATCHES ===")
