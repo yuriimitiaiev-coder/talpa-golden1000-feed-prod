@@ -1,0 +1,61 @@
+name: Stage5 targeted HOLD probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [stage5-supply-resolver]
+    paths:
+      - ".github/workflows/stage5-targeted-hold-probe.yml"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Probe current standard feeds
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import (
+              SIGMA_URL, ZA_URL, GRAND_URL, TEKNOSEL_URL, GPL_URL,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+          )
+          maps = {
+              "SIGMA": supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA"),
+              "ZAINSTRUMENTOM": supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom"),
+              "GRANDINSTRUMENT": supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument"),
+              "TEKNOSEL": google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL"),
+              "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
+          }
+          print("TARGETED_HOLD_BEGIN")
+          counts={"METAL_SET":0,"DRYWALL_EDGE":0}
+          for partner, mp in maps.items():
+              for sku, offer in mp.items():
+                  if offer.get("available") != "true":
+                      continue
+                  name=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+                  low=name.lower()
+                  metal=(("сверд" in low) or ("сверл" in low)) and (("метал" in low) or ("hss" in low)) and (("набір" in low) or ("набор" in low) or ("комплект" in low))
+                  drywall=(("гіпсокарт" in low) or ("гипсокарт" in low)) and (("фаск" in low) or ("кром" in low) or ("45°" in low) or ("45 град" in low))
+                  if metal or drywall:
+                      cls="METAL_SET" if metal else "DRYWALL_EDGE"
+                      counts[cls]+=1
+                      qty=(offer.findtext("quantity_in_stock") or "").strip()
+                      price=(offer.findtext("price") or "").strip()
+                      print(f"TARGETED_HOLD|class={cls}|partner={partner}|sku={sku}|qty={qty}|price={price}|name={name}")
+          print("TARGETED_HOLD_COUNTS|"+ "|".join(f"{k}={v}" for k,v in counts.items()))
+          print("TARGETED_HOLD_END")
+          PY
