@@ -155,6 +155,51 @@ jobs:
               print(f"EXACT_SIGMA_PROBE|sku={sku}|present=true|available={available}|qty={qty}|price={price}|name={name}")
           PY
 
+      - name: Targeted probe for remaining non-YATO HOLD candidates
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import (
+              SIGMA_URL, ZA_URL, GRAND_URL, TEKNOSEL_URL, GPL_URL,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+          )
+          maps = {
+              "SIGMA": supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA"),
+              "ZAINSTRUMENTOM": supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom"),
+              "GRANDINSTRUMENT": supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument"),
+              "TEKNOSEL": google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL"),
+              "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
+          }
+
+          def txt(o):
+              return (o.findtext("name_ua") or o.findtext("name") or "").strip()
+
+          print("TARGETED_HOLD_PROBE_BEGIN")
+          for partner, mp in maps.items():
+              for sku, offer in mp.items():
+                  if offer.get("available") != "true":
+                      continue
+                  name=txt(offer)
+                  low=name.lower()
+                  metal = ("сверд" in low or "сверл" in low) and ("метал" in low or "hss" in low) and ("набір" in low or "набор" in low or "комплект" in low)
+                  drywall = ("гіпсокарт" in low or "гипсокарт" in low) and ("фаск" in low or "кром" in low or "45°" in low or "45 град" in low)
+                  if metal or drywall:
+                      qty=(offer.findtext("quantity_in_stock") or "").strip()
+                      price=(offer.findtext("price") or "").strip()
+                      cls="METAL_SET" if metal else "DRYWALL_EDGE"
+                      print(f"TARGETED_HOLD_PROBE|class={cls}|partner={partner}|sku={sku}|qty={qty}|price={price}|name={name}")
+          print("TARGETED_HOLD_PROBE_END")
+          PY
+
       - name: Build feed plus Stage 5 resolver without deploy
         env:
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
