@@ -132,6 +132,29 @@ jobs:
           print("POWER_DISCOVERY_END")
           PY
 
+      - name: Exact fresh SIGMA probe for 1303311 and 1719691
+        env:
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import SIGMA_URL, download, supplier_offer_map
+          mp = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
+          for sku in ["1303311","1719691"]:
+              offer = mp.get(sku)
+              if offer is None:
+                  print(f"EXACT_SIGMA_PROBE|sku={sku}|present=false")
+                  continue
+              name=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+              qty=(offer.findtext("quantity_in_stock") or "").strip()
+              price=(offer.findtext("price") or "").strip()
+              available=offer.get("available")
+              print(f"EXACT_SIGMA_PROBE|sku={sku}|present=true|available={available}|qty={qty}|price={price}|name={name}")
+          PY
+
       - name: Build feed plus Stage 5 resolver without deploy
         env:
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
