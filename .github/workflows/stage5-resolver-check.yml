@@ -89,6 +89,49 @@ jobs:
           print("BLOCKED_DISCOVERY_END")
           PY
 
+      - name: Discover drills and power tools near YATO functions
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import (
+              SIGMA_URL, ZA_URL, GRAND_URL, TEKNOSEL_URL, GPL_URL,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+          )
+          maps = {
+              "SIGMA": supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA"),
+              "ZAINSTRUMENTOM": supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom"),
+              "GRANDINSTRUMENT": supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument"),
+              "TEKNOSEL": google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL"),
+              "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
+          }
+          terms = ["дриль","дрель","шуруповерт","шурупокрут","гайковерт","перфоратор","міксер","миксер"]
+          print("POWER_DISCOVERY_BEGIN")
+          for partner, mp in maps.items():
+              rows=[]
+              for sku, offer in mp.items():
+                  if offer.get("available") != "true":
+                      continue
+                  name=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+                  low=name.lower()
+                  if any(t in low for t in terms):
+                      qty=(offer.findtext("quantity_in_stock") or "").strip()
+                      price=(offer.findtext("price") or "").strip()
+                      rows.append((sku,qty,price,name))
+              print(f"POWER_DISCOVERY_PARTNER|partner={partner}|count={len(rows)}")
+              for sku,qty,price,name in rows[:120]:
+                  print(f"POWER_DISCOVERY|partner={partner}|sku={sku}|qty={qty}|price={price}|name={name}")
+          print("POWER_DISCOVERY_END")
+          PY
+
       - name: Build feed plus Stage 5 resolver without deploy
         env:
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
