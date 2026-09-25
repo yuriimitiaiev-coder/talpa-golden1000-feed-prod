@@ -30,6 +30,65 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check -r requirements.txt
 
+      - name: Broad functional discovery for remaining blocked MASTER
+        env:
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TEKNOSEL_FEED_URL: ${{ secrets.TEKNOSEL_FEED_URL }}
+          GRANDINSTRUMENT_FEED_URL: ${{ secrets.GRANDINSTRUMENT_FEED_URL }}
+          GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
+          SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: |
+          python - <<'PY'
+          import re, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from pool_common import (
+              SIGMA_URL, ZA_URL, GRAND_URL, TEKNOSEL_URL, GPL_URL,
+              download, supplier_offer_map, google_merchant_offer_map, gpl_offer_map,
+          )
+
+          maps = {
+              "SIGMA": supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA"),
+              "ZAINSTRUMENTOM": supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom"),
+              "GRANDINSTRUMENT": supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument"),
+              "TEKNOSEL": google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL"),
+              "GPL": gpl_offer_map(download(GPL_URL, "GPL"), "GPL"),
+          }
+
+          patterns = {
+              "METAL_DRILLS": ["сверд", "метал"],
+              "WOOD_SPADE": ["перов"],
+              "CONCRETE_DRILLS": ["сверд", "бетон"],
+              "MIXER": ["міксер"],
+              "MIXER_RU": ["миксер"],
+              "IMPACT_DRIVER": ["шуруп"],
+              "ROTARY_HAMMER": ["перфорат"],
+              "BATTERY": ["акумулятор"],
+              "BATTERY_RU": ["аккумулятор"],
+              "DRYWALL": ["гіпсокарт"],
+              "DRYWALL_RU": ["гипсокарт"],
+          }
+
+          print("BLOCKED_DISCOVERY_BEGIN")
+          for label, toks in patterns.items():
+              rows=[]
+              for partner, mp in maps.items():
+                  for sku, offer in mp.items():
+                      if offer.get("available") != "true":
+                          continue
+                      name=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+                      low=name.lower()
+                      if all(t in low for t in toks):
+                          qty=(offer.findtext("quantity_in_stock") or "").strip()
+                          price=(offer.findtext("price") or "").strip()
+                          rows.append((partner,sku,qty,price,name))
+              print(f"BLOCKED_DISCOVERY_CLASS|class={label}|count={len(rows)}")
+              for partner,sku,qty,price,name in rows[:80]:
+                  print(f"BLOCKED_DISCOVERY|class={label}|partner={partner}|sku={sku}|qty={qty}|price={price}|name={name}")
+          print("BLOCKED_DISCOVERY_END")
+          PY
+
       - name: Build feed plus Stage 5 resolver without deploy
         env:
           ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
