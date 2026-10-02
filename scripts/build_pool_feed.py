@@ -70,7 +70,7 @@ def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
         source = sigma_map.get(sku)
         if source is None:
             fail(f"SIGMA media mirror source is missing for {sku}")
-        pictures = [p for p in source.findall("picture") if (p.text or "").strip()][:10]
+        pictures = [p for p in source.findall("picture") if (p.text or "").strip()][:1]
         if not pictures:
             fail(f"SIGMA media mirror has no source pictures for {sku}")
 
