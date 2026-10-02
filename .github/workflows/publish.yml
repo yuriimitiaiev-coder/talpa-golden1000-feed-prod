@@ -119,6 +119,27 @@ jobs:
           for retired in {"9784290", "9784297"}:
               assert all(r["sku"] != retired for r in pool), (retired, pool)
 
+
+          # SIGMA media repair 02.10.2026:
+          # known Prom "Немає фото" SKUs must use live /resize_img/ URLs.
+          sigma_media_expected = {
+              "1193101", "1303311", "1719691",
+              "1917922", "1916822", "6050091", "1919262", "1918322",
+              "4016712", "6050251", "4014842", "6086961", "4016532",
+              "4016982", "4016902", "4020631", "6086541", "4008571",
+              "4008551", "9443401", "9443631", "6003075", "3727211",
+              "9443481", "3727411", "6003132", "9445411", "1811131",
+              "8217182", "4010502",
+          }
+          assert sigma_media_expected.issubset(set(codes)), sigma_media_expected - set(codes)
+          assert sigma_media_expected.issubset(set(status["sigma_media_repaired_skus"])), status
+          assert status["sigma_media_repaired_count"] >= len(sigma_media_expected), status
+          for sku in sigma_media_expected:
+              pictures = [(p.text or "").strip() for p in by_code[sku].findall("picture")]
+              assert pictures, (sku, etree.tostring(by_code[sku], encoding="unicode"))
+              assert all(p.startswith("https://sigma.ua/resize_img/") for p in pictures), (sku, pictures)
+              assert not any("/upload/iblock/" in p for p in pictures), (sku, pictures)
+
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
           assert snapshot["configured_sku_count"] == 99, snapshot

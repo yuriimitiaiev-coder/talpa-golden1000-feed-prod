@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 from lxml import etree
 
 from pool_common import MAX_CAPACITY, MAX_MISSING_ACTIVE, fail, get_shop_parts, parse_xml
@@ -14,6 +15,94 @@ GPL_ECONOM_POLICY = {
     "260809": {"commission_rate": 0.0746, "min_net": 80.0},
     "590017": {"commission_rate": 0.07755, "min_net": 80.0},
 }
+
+
+# SIGMA switched to a full catalogue feed on 2026-10-02. The feed still exposes
+# legacy /upload/iblock picture URLs for some products, while the live product
+# pages expose stable /resize_img/<slug>_detail_N.jpeg URLs accepted by Prom.
+#
+# Repair only the currently verified photo-problem SKUs, plus every *new*
+# structural SIGMA card going forward. Existing working SIGMA cards are left
+# untouched to avoid a catalogue-wide media rewrite.
+SIGMA_MEDIA_REPAIR_SKUS = {
+    "1193101", "1303311", "1719691",
+    "1917922", "1916822", "6050091", "1919262", "1918322",
+    "4016712", "6050251", "4014842", "6086961", "4016532",
+    "4016982", "4016902", "4020631", "6086541", "4008571",
+    "4008551", "9443401", "9443631", "6003075", "3727211",
+    "9443481", "3727411", "6003132", "9445411", "1811131",
+    "8217182", "4010502",
+}
+
+# Three legacy controller cards had no structural media in the published TALPA
+# feed. Their live SIGMA pages were verified directly on 2026-10-02.
+SIGMA_MEDIA_OVERRIDES = {
+    "1193101": (
+        "https://sigma.ua/buy/nabor-sverl-po-metallu-hss-tin-titanovykh-19-sht-1-0-10-0mm-plast-keys-sigma-1193101/",
+        6,
+    ),
+    "1303311": (
+        "https://sigma.ua/buy/nabor-sverl-perevykh-sigma-10-12-16-18-20-25mm-1303311/",
+        5,
+    ),
+    "1719691": (
+        "https://sigma.ua/buy/nabor-sverl-po-betonu-tsilindricheskiy-khvostovik-5sht-4-5-6-8-10mm-plastikovyy-keys-sigma-1719691/",
+        5,
+    ),
+}
+
+
+def _sigma_product_slug(url: str) -> str:
+    path = urlparse(url).path.strip("/")
+    parts = path.split("/")
+    if len(parts) >= 2 and parts[0] in {"buy", "ua"}:
+        if parts[0] == "ua" and len(parts) >= 3 and parts[1] == "buy":
+            return parts[2]
+        if parts[0] == "buy":
+            return parts[1]
+    return ""
+
+
+def repair_sigma_media(
+    out: etree._Element,
+    source: etree._Element,
+    row: dict[str, str],
+    *,
+    new_structural: bool,
+) -> bool:
+    """Replace verified-bad SIGMA iblock media with live resize_img URLs."""
+    if row["supplier"] != "SIGMA":
+        return False
+
+    sku = row["sku"]
+    if sku not in SIGMA_MEDIA_REPAIR_SKUS and not new_structural:
+        return False
+
+    override = SIGMA_MEDIA_OVERRIDES.get(sku)
+    url = (source.findtext("url") or out.findtext("url") or "").strip()
+    if not url and override:
+        url = override[0]
+
+    slug = _sigma_product_slug(url)
+    if not slug:
+        fail(f"Cannot derive SIGMA product slug for media repair: {sku}")
+
+    source_pictures = [p for p in source.findall("picture") if (p.text or "").strip()]
+    out_pictures = [p for p in out.findall("picture") if (p.text or "").strip()]
+    picture_count = min(len(source_pictures) or len(out_pictures), 10)
+    if picture_count == 0 and override:
+        picture_count = min(override[1], 10)
+    if picture_count == 0:
+        fail(f"SIGMA media repair has no picture count for {sku}")
+
+    set_child_text(out, "url", url)
+    remove_children(out, ("picture",))
+    for index in range(1, picture_count + 1):
+        etree.SubElement(
+            out,
+            "picture",
+        ).text = f"https://sigma.ua/resize_img/{slug}_detail_{index}.jpeg"
+    return True
 
 
 def set_child_text(parent: etree._Element, tag: str, value: str) -> etree._Element:
@@ -209,6 +298,7 @@ def category_ids_needed(active_rows, groups) -> set[str]:
 def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_map, grand_map, gpl_map):
     missing: list[str] = []
     new_structural: list[str] = []
+    sigma_media_repaired: list[str] = []
     output_offers: list[etree._Element] = []
     seen_offer_ids: set[str] = set()
     source_maps = {
@@ -233,10 +323,13 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
             set_child_text(out, "vendorCode", sku)
             missing.append(sku)
         else:
-            if previous is None:
+            is_new_structural = previous is None
+            if is_new_structural:
                 previous = build_new_structural_offer(source, row)
                 new_structural.append(sku)
             out = overlay_commercial(previous, source, row)
+            if repair_sigma_media(out, source, row, new_structural=is_new_structural):
+                sigma_media_repaired.append(sku)
 
         oid = (out.get("id") or "").strip()
         if not oid:
@@ -296,6 +389,8 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "supplier_missing_active": sorted(missing),
         "supplier_missing_count": len(missing),
         "new_structural_cards": sorted(new_structural),
+        "sigma_media_repaired_count": len(sigma_media_repaired),
+        "sigma_media_repaired_skus": sorted(sigma_media_repaired),
         "categories": len(check_categories.findall("category")),
         "output_bytes": len(xml_bytes),
         "sha256": hashlib.sha256(xml_bytes).hexdigest(),
