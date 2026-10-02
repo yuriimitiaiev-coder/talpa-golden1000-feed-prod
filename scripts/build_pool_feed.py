@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import tempfile
+from urllib.parse import urlparse
+
+from lxml import etree
 
 from build_kit_price_snapshot import write_kit_price_snapshot
 from build_kit_supply_resolver import write_kit_supply_resolver
@@ -19,6 +23,7 @@ from pool_common import (
     PUBLISHED_FEED_URL,
     SIGMA_URL,
     STATUS_JSON,
+    fail,
     TEKNOSEL_URL,
     ZA_URL,
     download,
@@ -29,7 +34,7 @@ from pool_common import (
     load_pool,
     supplier_offer_map,
 )
-from pool_builder import build_xml
+from pool_builder import SIGMA_MEDIA_REPAIR_SKUS, build_xml
 
 
 def write_atomically(path, data: bytes) -> None:
@@ -38,6 +43,58 @@ def write_atomically(path, data: bytes) -> None:
         handle.write(data)
         temp_name = handle.name
     os.replace(temp_name, path)
+
+
+SIGMA_MEDIA_PUBLIC_BASE = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma"
+
+
+def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
+    """Mirror known/problematic SIGMA media into the Pages artifact and rewrite source URLs."""
+    media_dir = OUTPUT_DIR / "media" / "sigma"
+    if media_dir.exists():
+        shutil.rmtree(media_dir)
+    media_dir.mkdir(parents=True, exist_ok=True)
+
+    selected: set[str] = set(SIGMA_MEDIA_REPAIR_SKUS)
+    for row in active_rows:
+        if row["supplier"] != "SIGMA":
+            continue
+        sku = row["sku"]
+        if not row["prom_offer_id"] and sku not in published_map:
+            selected.add(sku)
+
+    mirrored_skus = 0
+    mirrored_files = 0
+    for sku in sorted(selected):
+        source = sigma_map.get(sku)
+        if source is None:
+            fail(f"SIGMA media mirror source is missing for {sku}")
+        pictures = [p for p in source.findall("picture") if (p.text or "").strip()][:10]
+        if not pictures:
+            fail(f"SIGMA media mirror has no source pictures for {sku}")
+
+        hosted_urls: list[str] = []
+        for index, picture in enumerate(pictures, start=1):
+            source_url = (picture.text or "").strip()
+            suffix = Path(urlparse(source_url).path).suffix.lower()
+            if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
+                suffix = ".jpg"
+            data = download(source_url, f"SIGMA image {sku} #{index}")
+            filename = f"{sku}_{index}{suffix}"
+            target = media_dir / filename
+            write_atomically(target, data)
+            if target.stat().st_size < 500:
+                fail(f"SIGMA mirrored image is unexpectedly small for {sku} #{index}")
+            hosted_urls.append(f"{SIGMA_MEDIA_PUBLIC_BASE}/{filename}")
+            mirrored_files += 1
+
+        for node in list(source.findall("picture")):
+            source.remove(node)
+        for hosted_url in hosted_urls:
+            etree.SubElement(source, "picture").text = hosted_url
+        mirrored_skus += 1
+
+    return {"sigma_media_mirrored_skus": mirrored_skus, "sigma_media_mirrored_files": mirrored_files}
 
 
 def main() -> None:
@@ -72,6 +129,8 @@ def main() -> None:
     if unresolved:
         print("UNRESOLVED_ACTIVE_NO_FALLBACK=" + ",".join(unresolved))
 
+    sigma_media_mirror = mirror_sigma_media(sigma_map, active_rows, published_map)
+
     # TALPA only patches verified supplier-content defects. Price guarding for
     # ZaInstrumentom is handled separately above and affects commercial fields only.
     patch_grand_content(published_map)
@@ -97,6 +156,7 @@ def main() -> None:
             "active_headroom": MAX_CAPACITY - len(active_rows),
             "zainstrumentom_promotions_guarded": len(za_promo_adjustments),
             "zainstrumentom_promotion_adjustments": za_promo_adjustments,
+            **sigma_media_mirror,
         }
     )
 
