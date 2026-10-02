@@ -101,6 +101,24 @@ jobs:
           assert any(r["sku"] == "9784281" and r["status"] == "RESERVE" for r in pool), pool
           assert all(r["sku"] != "9784284" for r in pool), pool
 
+          # Commercial-only rotation 02.10.2026:
+          # replace unavailable 3912021 / 6021781 with top-ranked live SIGMA
+          # candidates 8217182 / 4010502. Retire legacy RESERVE 9784290 / 9784297.
+          assert status["active"] == 980, status
+          assert status["reserve_configured"] == 20, status
+          assert status["pool_configured"] == 1000, status
+          by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
+          for sku in {"8217182", "4010502"}:
+              assert sku in codes, (sku, codes)
+              assert sku not in status["supplier_missing_active"], status
+              assert by_code[sku].get("available") == "true", etree.tostring(by_code[sku], encoding="unicode")
+              assert int(float((by_code[sku].findtext("quantity_in_stock") or "0").replace(",", "."))) > 0, etree.tostring(by_code[sku], encoding="unicode")
+          for sku in {"3912021", "6021781"}:
+              assert sku not in codes, (sku, codes)
+              assert any(r["sku"] == sku and r["status"] == "RESERVE" for r in pool), (sku, pool)
+          for retired in {"9784290", "9784297"}:
+              assert all(r["sku"] != retired for r in pool), (retired, pool)
+
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
           assert snapshot["configured_sku_count"] == 99, snapshot

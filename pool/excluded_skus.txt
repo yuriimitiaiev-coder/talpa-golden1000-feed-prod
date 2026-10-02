@@ -92,3 +92,6 @@ VI0331
 7411832
 # PLWP0110 controlled catalogue rotation — 19.09.2026
 9784284
+# Commercial rotation — 02.10.2026
+9784290
+9784297
