@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 from urllib.parse import urlparse
+from pathlib import Path
 
 from lxml import etree
 
