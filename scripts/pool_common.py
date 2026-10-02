@@ -23,7 +23,7 @@ MAX_MISSING_ACTIVE = int(os.environ.get("MAX_MISSING_ACTIVE", "25"))
 TIMEOUT_SECONDS = int(os.environ.get("DOWNLOAD_TIMEOUT_SECONDS", "120"))
 SIGMA_URL = os.environ.get(
     "SIGMA_FEED_URL",
-    "https://sigma.ua/bitrix/catalog_export/marketsigma_ua.php",
+    "https://sigma.ua/bitrix/catalog_export/marketsigma_all_ua.php",
 ).strip()
 ZA_URL = os.environ.get("ZAINSTRUMENTOM_FEED_URL", "").strip()
 TEKNOSEL_URL = os.environ.get("TEKNOSEL_FEED_URL", "").strip()
