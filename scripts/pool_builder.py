@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import hashlib
 from datetime import datetime, timezone
-from urllib.parse import urlparse
 from lxml import etree
 
 from pool_common import MAX_CAPACITY, MAX_MISSING_ACTIVE, fail, get_shop_parts, parse_xml
@@ -34,35 +33,6 @@ SIGMA_MEDIA_REPAIR_SKUS = {
     "8217182", "4010502",
 }
 
-# Three legacy controller cards had no structural media in the published TALPA
-# feed. Their live SIGMA pages were verified directly on 2026-10-02.
-SIGMA_MEDIA_OVERRIDES = {
-    "1193101": (
-        "https://sigma.ua/buy/nabor-sverl-po-metallu-hss-tin-titanovykh-19-sht-1-0-10-0mm-plast-keys-sigma-1193101/",
-        6,
-    ),
-    "1303311": (
-        "https://sigma.ua/buy/nabor-sverl-perevykh-sigma-10-12-16-18-20-25mm-1303311/",
-        5,
-    ),
-    "1719691": (
-        "https://sigma.ua/buy/nabor-sverl-po-betonu-tsilindricheskiy-khvostovik-5sht-4-5-6-8-10mm-plastikovyy-keys-sigma-1719691/",
-        5,
-    ),
-}
-
-
-def _sigma_product_slug(url: str) -> str:
-    path = urlparse(url).path.strip("/")
-    parts = path.split("/")
-    if len(parts) >= 2 and parts[0] in {"buy", "ua"}:
-        if parts[0] == "ua" and len(parts) >= 3 and parts[1] == "buy":
-            return parts[2]
-        if parts[0] == "buy":
-            return parts[1]
-    return ""
-
-
 def repair_sigma_media(
     out: etree._Element,
     source: etree._Element,
@@ -70,7 +40,7 @@ def repair_sigma_media(
     *,
     new_structural: bool,
 ) -> bool:
-    """Replace verified-bad SIGMA iblock media with live resize_img URLs."""
+    """Use only SIGMA pictures already mirrored into the TALPA Pages artifact."""
     if row["supplier"] != "SIGMA":
         return False
 
@@ -78,32 +48,18 @@ def repair_sigma_media(
     if sku not in SIGMA_MEDIA_REPAIR_SKUS and not new_structural:
         return False
 
-    override = SIGMA_MEDIA_OVERRIDES.get(sku)
-    url = (source.findtext("url") or out.findtext("url") or "").strip()
-    if not url and override:
-        url = override[0]
-
-    slug = _sigma_product_slug(url)
-    if not slug:
-        fail(f"Cannot derive SIGMA product slug for media repair: {sku}")
-
     source_pictures = [p for p in source.findall("picture") if (p.text or "").strip()]
-    out_pictures = [p for p in out.findall("picture") if (p.text or "").strip()]
-    picture_count = min(len(source_pictures) or len(out_pictures), 10)
-    if picture_count == 0 and override:
-        picture_count = min(override[1], 10)
-    if picture_count == 0:
-        fail(f"SIGMA media repair has no picture count for {sku}")
+    if not source_pictures:
+        fail(f"SIGMA media repair has no mirrored pictures for {sku}")
+    hosted_prefix = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma/"
+    urls = [(p.text or "").strip() for p in source_pictures]
+    if not all(url.startswith(hosted_prefix) for url in urls):
+        fail(f"SIGMA media repair contains non-mirrored URL for {sku}")
 
-    set_child_text(out, "url", url)
     remove_children(out, ("picture",))
-    for index in range(1, picture_count + 1):
-        etree.SubElement(
-            out,
-            "picture",
-        ).text = f"https://sigma.ua/resize_img/{slug}_detail_{index}.jpeg"
+    for picture in source_pictures[:10]:
+        out.append(copy.deepcopy(picture))
     return True
-
 
 def set_child_text(parent: etree._Element, tag: str, value: str) -> etree._Element:
     node = parent.find(tag)
