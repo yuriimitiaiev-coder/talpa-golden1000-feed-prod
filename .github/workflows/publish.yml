@@ -137,8 +137,13 @@ jobs:
           for sku in sigma_media_expected:
               pictures = [(p.text or "").strip() for p in by_code[sku].findall("picture")]
               assert pictures, (sku, etree.tostring(by_code[sku], encoding="unicode"))
-              assert all(p.startswith("https://sigma.ua/resize_img/") for p in pictures), (sku, pictures)
-              assert not any("/upload/iblock/" in p for p in pictures), (sku, pictures)
+              hosted_prefix = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma/"
+              assert all(p.startswith(hosted_prefix) for p in pictures), (sku, pictures)
+              for picture_url in pictures:
+                  rel = picture_url.split("/talpa-golden1000-feed-prod/", 1)[1]
+                  media_file = Path("docs") / rel
+                  assert media_file.is_file(), (sku, picture_url, media_file)
+                  assert media_file.stat().st_size >= 500, (sku, picture_url, media_file.stat().st_size)
 
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
