@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 from pathlib import Path
 
@@ -35,7 +36,7 @@ from pool_common import (
     load_pool,
     supplier_offer_map,
 )
-from pool_builder import SIGMA_MEDIA_REPAIR_SKUS, build_xml
+from pool_builder import build_xml
 
 
 def write_atomically(path, data: bytes) -> None:
@@ -50,52 +51,61 @@ SIGMA_MEDIA_PUBLIC_BASE = "https://yuriimitiaiev-coder.github.io/talpa-golden100
 
 
 def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
-    """Mirror known/problematic SIGMA media into the Pages artifact and rewrite source URLs."""
+    """Mirror the primary image for every ACTIVE SIGMA SKU into the Pages artifact."""
     media_dir = OUTPUT_DIR / "media" / "sigma"
     if media_dir.exists():
         shutil.rmtree(media_dir)
     media_dir.mkdir(parents=True, exist_ok=True)
 
-    selected: set[str] = set(SIGMA_MEDIA_REPAIR_SKUS)
-    for row in active_rows:
-        if row["supplier"] != "SIGMA":
-            continue
-        sku = row["sku"]
-        if not row["prom_offer_id"] and sku not in published_map:
-            selected.add(sku)
+    selected = sorted(
+        row["sku"]
+        for row in active_rows
+        if row["supplier"] == "SIGMA"
+    )
 
-    mirrored_skus = 0
-    mirrored_files = 0
-    for sku in sorted(selected):
+    jobs: dict[str, tuple[str, str, Path]] = {}
+    for sku in selected:
         source = sigma_map.get(sku)
         if source is None:
-            fail(f"SIGMA media mirror source is missing for {sku}")
-        pictures = [p for p in source.findall("picture") if (p.text or "").strip()][:1]
-        if not pictures:
-            fail(f"SIGMA media mirror has no source pictures for {sku}")
+            fail(f"SIGMA media mirror source is missing for ACTIVE SKU {sku}")
+        picture = next((p for p in source.findall("picture") if (p.text or "").strip()), None)
+        if picture is None:
+            fail(f"SIGMA media mirror has no source picture for ACTIVE SKU {sku}")
+        source_url = (picture.text or "").strip()
+        suffix = Path(urlparse(source_url).path).suffix.lower()
+        if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
+            suffix = ".jpg"
+        filename = f"{sku}_1{suffix}"
+        jobs[sku] = (source_url, filename, media_dir / filename)
 
-        hosted_urls: list[str] = []
-        for index, picture in enumerate(pictures, start=1):
-            source_url = (picture.text or "").strip()
-            suffix = Path(urlparse(source_url).path).suffix.lower()
-            if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
-                suffix = ".jpg"
-            data = download(source_url, f"SIGMA image {sku} #{index}")
-            filename = f"{sku}_{index}{suffix}"
-            target = media_dir / filename
+    def fetch_one(item: tuple[str, tuple[str, str, Path]]) -> tuple[str, str, Path, bytes]:
+        sku, (source_url, filename, target) = item
+        data = download(source_url, f"SIGMA image {sku} #1")
+        return sku, filename, target, data
+
+    downloaded: dict[str, str] = {}
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        futures = [executor.submit(fetch_one, item) for item in jobs.items()]
+        for future in as_completed(futures):
+            sku, filename, target, data = future.result()
+            if len(data) < 500:
+                fail(f"SIGMA mirrored image is unexpectedly small for {sku} #1")
             write_atomically(target, data)
-            if target.stat().st_size < 500:
-                fail(f"SIGMA mirrored image is unexpectedly small for {sku} #{index}")
-            hosted_urls.append(f"{SIGMA_MEDIA_PUBLIC_BASE}/{filename}")
-            mirrored_files += 1
+            downloaded[sku] = f"{SIGMA_MEDIA_PUBLIC_BASE}/{filename}"
 
+    if len(downloaded) != len(selected):
+        fail(f"SIGMA media mirror incomplete: {len(downloaded)} of {len(selected)}")
+
+    for sku in selected:
+        source = sigma_map[sku]
         for node in list(source.findall("picture")):
             source.remove(node)
-        for hosted_url in hosted_urls:
-            etree.SubElement(source, "picture").text = hosted_url
-        mirrored_skus += 1
+        etree.SubElement(source, "picture").text = downloaded[sku]
 
-    return {"sigma_media_mirrored_skus": mirrored_skus, "sigma_media_mirrored_files": mirrored_files}
+    return {
+        "sigma_media_mirrored_skus": len(selected),
+        "sigma_media_mirrored_files": len(downloaded),
+    }
 
 
 def main() -> None:

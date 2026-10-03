@@ -120,30 +120,25 @@ jobs:
               assert all(r["sku"] != retired for r in pool), (retired, pool)
 
 
-          # SIGMA media repair 02.10.2026:
-          # known Prom "Немає фото" SKUs must use live /resize_img/ URLs.
-          sigma_media_expected = {
-              "1193101", "1303311", "1719691",
-              "1917922", "1916822", "6050091", "1919262", "1918322",
-              "4016712", "6050251", "4014842", "6086961", "4016532",
-              "4016982", "4016902", "4020631", "6086541", "4008571",
-              "4008551", "9443401", "9443631", "6003075", "3727211",
-              "9443481", "3727411", "6003132", "9445411", "1811131",
-              "8217182", "4010502",
-          }
-          assert sigma_media_expected.issubset(set(codes)), sigma_media_expected - set(codes)
-          assert sigma_media_expected.issubset(set(status["sigma_media_repaired_skus"])), status
-          assert status["sigma_media_repaired_count"] >= len(sigma_media_expected), status
-          for sku in sigma_media_expected:
+          # SIGMA media mirror 03.10.2026:
+          # every ACTIVE SIGMA offer must use exactly one TALPA Pages image.
+          sigma_active = [r["sku"] for r in active if r["supplier"] == "SIGMA"]
+          hosted_prefix = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma/"
+          assert status["sigma_active"] == len(sigma_active), status
+          assert status["sigma_media_repaired_count"] == len(sigma_active), status
+          assert status["sigma_media_mirrored_skus"] == len(sigma_active), status
+          assert status["sigma_media_mirrored_files"] == len(sigma_active), status
+          assert set(status["sigma_media_repaired_skus"]) == set(sigma_active), status
+          for sku in sigma_active:
               pictures = [(p.text or "").strip() for p in by_code[sku].findall("picture")]
-              assert pictures, (sku, etree.tostring(by_code[sku], encoding="unicode"))
-              hosted_prefix = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma/"
-              assert all(p.startswith(hosted_prefix) for p in pictures), (sku, pictures)
-              for picture_url in pictures:
-                  rel = picture_url.split("/talpa-golden1000-feed-prod/", 1)[1]
-                  media_file = Path("docs") / rel
-                  assert media_file.is_file(), (sku, picture_url, media_file)
-                  assert media_file.stat().st_size >= 500, (sku, picture_url, media_file.stat().st_size)
+              assert len(pictures) == 1, (sku, pictures)
+              picture_url = pictures[0]
+              assert picture_url.startswith(hosted_prefix), (sku, picture_url)
+              assert "sigma.ua/" not in picture_url, (sku, picture_url)
+              rel = picture_url.split("/talpa-golden1000-feed-prod/", 1)[1]
+              media_file = Path("docs") / rel
+              assert media_file.is_file(), (sku, picture_url, media_file)
+              assert media_file.stat().st_size >= 500, (sku, picture_url, media_file.stat().st_size)
 
           # Commercial rotation wave 1 — 03.10.2026:
           # 20 unavailable ZaInstrumentom SKUs -> ranked candidates #3-22.

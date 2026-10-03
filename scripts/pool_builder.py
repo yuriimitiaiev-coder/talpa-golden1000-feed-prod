@@ -16,22 +16,9 @@ GPL_ECONOM_POLICY = {
 }
 
 
-# SIGMA switched to a full catalogue feed on 2026-10-02. The feed still exposes
-# legacy /upload/iblock picture URLs for some products, while the live product
-# pages expose stable /resize_img/<slug>_detail_N.jpeg URLs accepted by Prom.
-#
-# Repair only the currently verified photo-problem SKUs, plus every *new*
-# structural SIGMA card going forward. Existing working SIGMA cards are left
-# untouched to avoid a catalogue-wide media rewrite.
-SIGMA_MEDIA_REPAIR_SKUS = {
-    "1193101", "1303311", "1719691",
-    "1917922", "1916822", "6050091", "1919262", "1918322",
-    "4016712", "6050251", "4014842", "6086961", "4016532",
-    "4016982", "4016902", "4020631", "6086541", "4008571",
-    "4008551", "9443401", "9443631", "6003075", "3727211",
-    "9443481", "3727411", "6003132", "9445411", "1811131",
-    "8217182", "4010502",
-}
+# SIGMA media policy since 2026-10-03:
+# every ACTIVE SIGMA offer must use only a primary image mirrored through
+# TALPA GitHub Pages. Direct sigma.ua picture URLs are not emitted to Prom.
 
 def repair_sigma_media(
     out: etree._Element,
@@ -45,8 +32,6 @@ def repair_sigma_media(
         return False
 
     sku = row["sku"]
-    if sku not in SIGMA_MEDIA_REPAIR_SKUS and not new_structural:
-        return False
 
     source_pictures = [p for p in source.findall("picture") if (p.text or "").strip()]
     if not source_pictures:
@@ -57,7 +42,7 @@ def repair_sigma_media(
         fail(f"SIGMA media repair contains non-mirrored URL for {sku}")
 
     remove_children(out, ("picture",))
-    for picture in source_pictures[:10]:
+    for picture in source_pictures[:1]:
         out.append(copy.deepcopy(picture))
     return True
 
