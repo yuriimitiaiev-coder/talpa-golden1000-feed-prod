@@ -145,6 +145,41 @@ jobs:
                   assert media_file.is_file(), (sku, picture_url, media_file)
                   assert media_file.stat().st_size >= 500, (sku, picture_url, media_file.stat().st_size)
 
+          # Commercial rotation wave 1 — 03.10.2026:
+          # 20 unavailable ZaInstrumentom SKUs -> ranked candidates #3-22.
+          wave1_new = {
+              "8402521", "4002121", "YT-3259", "4001141", "6010111",
+              "4009021", "6003055", "4008531", "9449701", "8217172",
+              "3822142", "4013202", "YT-81440", "2613631", "9026121",
+              "8429611", "2-14-563", "YT-3308", "9029025", "9038125",
+          }
+          wave1_old = {
+              "FD775-30", "605", "1107-0865", "1001-2434", "1001-2605",
+              "30105", "1101-0200", "1008-0331", "FD-793", "1103-0722",
+              "3004-0332", "1101-0224", "1102-0193", "1008-0059", "31482",
+              "1239250G5", "YT-82055", "YT-827722", "YT-82786", "YT-828461",
+          }
+          wave1_retired_reserve = {
+              "9680505", "9681105", "9681405", "9687905", "1001-1882",
+              "1103-0030", "1103-2531", "1109-0869", "1207-2061", "9780210",
+              "ZTE150", "7012091", "2722022", "1001-1891", "1109-0882",
+              "295", "PLSC0108", "9784281", "3912021", "6021781",
+          }
+          assert status["active"] == 980, status
+          assert status["reserve_configured"] == 20, status
+          assert status["pool_configured"] == 1000, status
+          by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
+          for sku in wave1_new:
+              assert sku in codes, (sku, codes)
+              assert sku not in status["supplier_missing_active"], status
+              assert by_code[sku].get("available") == "true", etree.tostring(by_code[sku], encoding="unicode")
+              assert int(float((by_code[sku].findtext("quantity_in_stock") or "0").replace(",", "."))) > 0, etree.tostring(by_code[sku], encoding="unicode")
+          for sku in wave1_old:
+              assert sku not in codes, (sku, codes)
+              assert any(r["sku"] == sku and r["status"] == "RESERVE" for r in pool), (sku, pool)
+          for sku in wave1_retired_reserve:
+              assert all(r["sku"] != sku for r in pool), (sku, pool)
+
           assert snapshot["schema_version"] == 1, snapshot
           assert snapshot["source_master"] == "TALPA_KIT_MASTER_FINAL_v1_0", snapshot
           assert snapshot["configured_sku_count"] == 99, snapshot
