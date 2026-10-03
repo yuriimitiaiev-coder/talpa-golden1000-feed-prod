@@ -98,7 +98,7 @@ jobs:
           assert status["pool_configured"] == 1000, status
           assert "PLWP0110" in codes, codes
           assert "9784281" not in codes, codes
-          assert any(r["sku"] == "9784281" and r["status"] == "RESERVE" for r in pool), pool
+          assert all(r["sku"] != "9784281" for r in pool), pool
           assert all(r["sku"] != "9784284" for r in pool), pool
 
           # Commercial-only rotation 02.10.2026:
@@ -115,7 +115,7 @@ jobs:
               assert int(float((by_code[sku].findtext("quantity_in_stock") or "0").replace(",", "."))) > 0, etree.tostring(by_code[sku], encoding="unicode")
           for sku in {"3912021", "6021781"}:
               assert sku not in codes, (sku, codes)
-              assert any(r["sku"] == sku and r["status"] == "RESERVE" for r in pool), (sku, pool)
+              assert all(r["sku"] != sku for r in pool), (sku, pool)
           for retired in {"9784290", "9784297"}:
               assert all(r["sku"] != retired for r in pool), (retired, pool)
 
