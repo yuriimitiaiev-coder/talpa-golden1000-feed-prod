@@ -59,6 +59,7 @@ jobs:
           test -s docs/status.json
           test -s docs/kit_price_snapshot.json
           test -s docs/kit_supply_resolver.json
+          test -s docs/sources/sigma_feed.xml.gz
           python - <<'PY'
           import json
           import sys
@@ -81,6 +82,8 @@ jobs:
           assert status["pool_configured"] == len(pool), status
           assert status["free_slots"] == 1000 - len(pool), status
           assert len(status["sha256"]) == 64, status
+          assert status["sigma_feed_source"] in {"live", "published_snapshot"}, status
+          assert status["sigma_feed_snapshot_bytes"] > 100000, status
           # Missing supplier SKUs are a health signal, not a reason to freeze stale inventory.
 
           root = etree.parse("docs/golden1000.xml").getroot()

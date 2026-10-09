@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import shutil
@@ -48,6 +49,28 @@ def write_atomically(path, data: bytes) -> None:
 
 
 SIGMA_MEDIA_PUBLIC_BASE = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/media/sigma"
+SIGMA_SNAPSHOT_URL = "https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/sources/sigma_feed.xml.gz"
+SIGMA_SNAPSHOT_PATH = OUTPUT_DIR / "sources" / "sigma_feed.xml.gz"
+
+
+def load_sigma_feed() -> tuple[bytes, str, bytes]:
+    """Load live SIGMA feed, falling back to the last successfully published snapshot."""
+    live_data = download(SIGMA_URL, "SIGMA live feed", optional=True)
+    if live_data:
+        snapshot_bytes = gzip.compress(live_data, compresslevel=9)
+        return live_data, "live", snapshot_bytes
+
+    snapshot_bytes = download(SIGMA_SNAPSHOT_URL, "SIGMA published snapshot", optional=True)
+    if not snapshot_bytes:
+        fail("SIGMA live feed and published fallback snapshot are both unavailable")
+    try:
+        snapshot_data = gzip.decompress(snapshot_bytes)
+    except Exception as exc:
+        fail(f"Invalid SIGMA fallback snapshot: {exc}")
+    if len(snapshot_data) < 500:
+        fail(f"SIGMA fallback snapshot is unexpectedly small: {len(snapshot_data)} bytes")
+    print("WARNING: using last published SIGMA feed snapshot")
+    return snapshot_data, "published_snapshot", snapshot_bytes
 
 
 def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
@@ -116,7 +139,8 @@ def main() -> None:
 
     published_data = download(PUBLISHED_FEED_URL, "published feed", optional=True)
     published_map = feed_offer_map(published_data, "published feed") if published_data else {}
-    sigma_map = supplier_offer_map(download(SIGMA_URL, "SIGMA"), "SIGMA")
+    sigma_data, sigma_feed_source, sigma_snapshot_bytes = load_sigma_feed()
+    sigma_map = supplier_offer_map(sigma_data, "SIGMA")
     za_map = supplier_offer_map(download(ZA_URL, "Zainstrumentom"), "Zainstrumentom")
     za_promo_adjustments = normalize_zainstrumentom_promotions(za_map)
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
@@ -167,11 +191,14 @@ def main() -> None:
             "active_headroom": MAX_CAPACITY - len(active_rows),
             "zainstrumentom_promotions_guarded": len(za_promo_adjustments),
             "zainstrumentom_promotion_adjustments": za_promo_adjustments,
+            "sigma_feed_source": sigma_feed_source,
+            "sigma_feed_snapshot_bytes": len(sigma_snapshot_bytes),
             **sigma_media_mirror,
         }
     )
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    write_atomically(SIGMA_SNAPSHOT_PATH, sigma_snapshot_bytes)
     write_atomically(OUTPUT_XML, xml_bytes)
     STATUS_JSON.write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
@@ -210,6 +237,7 @@ def main() -> None:
 <p>Вільних місць у пулі: {metadata['free_slots']}</p>
 <p>SKU без актуального запису постачальника: {metadata['supplier_missing_count']}</p>
 <p>Акцій ZaInstrumentom захищено: {metadata['zainstrumentom_promotions_guarded']}</p>
+<p>Джерело SIGMA: {metadata['sigma_feed_source']}</p>
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
