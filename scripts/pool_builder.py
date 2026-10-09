@@ -253,7 +253,11 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
     for row in active_rows:
         sku = row["sku"]
         source = source_maps[row["supplier"]].get(sku)
-        previous = build_controller_offer(row) if row["prom_offer_id"] else published_map.get(sku)
+        # Prefer the last published card so a supplier disappearance can be
+        # propagated as unavailable without losing stable content (name/photo).
+        previous = published_map.get(sku)
+        if previous is None and row["prom_offer_id"]:
+            previous = build_controller_offer(row)
 
         if source is None:
             if previous is None:
@@ -281,7 +285,10 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         output_offers.append(out)
 
     if len(missing) > MAX_MISSING_ACTIVE:
-        fail(f"Supplier feeds are missing {len(missing)} ACTIVE SKUs; limit is {MAX_MISSING_ACTIVE}")
+        print(
+            f"WARNING: supplier feeds are missing {len(missing)} ACTIVE SKUs; "
+            f"health threshold is {MAX_MISSING_ACTIVE}. Fresh unavailable statuses will still be published."
+        )
 
     needed = category_ids_needed(active_rows, groups)
     root = etree.Element("yml_catalog", date=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
@@ -329,6 +336,8 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         "gpl_active": sum(r["supplier"] == "GPL" for r in active_rows),
         "supplier_missing_active": sorted(missing),
         "supplier_missing_count": len(missing),
+        "supplier_missing_threshold": MAX_MISSING_ACTIVE,
+        "supplier_missing_limit_exceeded": len(missing) > MAX_MISSING_ACTIVE,
         "new_structural_cards": sorted(new_structural),
         "sigma_media_repaired_count": len(sigma_media_repaired),
         "sigma_media_repaired_skus": sorted(sigma_media_repaired),

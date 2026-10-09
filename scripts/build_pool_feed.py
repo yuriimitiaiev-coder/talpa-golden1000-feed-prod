@@ -60,7 +60,7 @@ def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
     selected = sorted(
         row["sku"]
         for row in active_rows
-        if row["supplier"] == "SIGMA"
+        if row["supplier"] == "SIGMA" and row["sku"] in sigma_map
     )
 
     jobs: dict[str, tuple[str, str, Path]] = {}
