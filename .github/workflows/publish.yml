@@ -167,8 +167,12 @@ jobs:
           assert status["reserve_configured"] == 20, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
-          for sku in wave1_new:
+          wave1_retired_later = {"9449701"}
+          for sku in wave1_new - wave1_retired_later:
               assert sku in codes, (sku, codes)
+          for sku in wave1_retired_later:
+              assert sku not in codes, (sku, codes)
+              assert all(r["sku"] != sku for r in pool), (sku, pool)
           for sku in wave1_old:
               assert sku not in codes, (sku, codes)
               assert any(r["sku"] == sku and r["status"] == "RESERVE" for r in pool), (sku, pool)
