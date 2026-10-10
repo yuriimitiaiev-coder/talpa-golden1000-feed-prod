@@ -221,6 +221,25 @@ jobs:
               assert sku not in codes, (sku, codes)
               assert all(r["sku"] != sku for r in pool), (sku, pool)
 
+
+          # OOS replacement wave 4 — 10.10.2026:
+          # replace 17 currently unavailable non-MASTER ACTIVE SKUs with live SIGMA tool SKUs.
+          wave4_new = {"9182151", "9181151", "9016121", "9015051", "9022121", "9025101", "9028071", "1811081", "1811141", "1811201", "1811211", "1811291", "1811361", "1811451", "1957525", "1957545", "2051211"}
+          wave4_old = {"6003701", "90155", "19894", "1001-1671", "1004-0064", "1008-0300", "1109-0877", "100744", "105970", "4322361", "4321842", "03-1-03-EN BDN", "29554", "1239600G5", "1239800G5S", "8402421", "9449701"}
+          assert len(wave4_new) == 17, len(wave4_new)
+          assert len(wave4_old) == 17, len(wave4_old)
+          assert status["active"] == 980, status
+          assert status["reserve_configured"] == 20, status
+          assert status["pool_configured"] == 1000, status
+          by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
+          for sku in wave4_new:
+              assert sku in codes, (sku, codes)
+              assert by_code[sku].get("available") == "true", (sku, etree.tostring(by_code[sku], encoding="unicode"))
+              assert by_code[sku].findall("picture"), (sku, etree.tostring(by_code[sku], encoding="unicode"))
+          for sku in wave4_old:
+              assert sku not in codes, (sku, codes)
+              assert all(r["sku"] != sku for r in pool), (sku, pool)
+
           # Current supplier availability may change after rotation; do not freeze the feed.
 
           assert snapshot["schema_version"] == 1, snapshot
