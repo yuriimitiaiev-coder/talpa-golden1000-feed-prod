@@ -39,6 +39,7 @@ from pool_common import (
 )
 from pool_builder import build_xml
 from stock_monitor import build_stock_monitor, fetch_previous_history
+from stock_dashboard import render_dashboard
 
 
 def write_atomically(path, data: bytes) -> None:
@@ -215,6 +216,9 @@ def main() -> None:
     write_atomically(SIGMA_SNAPSHOT_PATH, sigma_snapshot_bytes)
     write_atomically(OUTPUT_XML, xml_bytes)
     write_atomically(
+        OUTPUT_DIR / "stock.html", render_dashboard(stock_monitor).encode("utf-8")
+    )
+    write_atomically(
         OUTPUT_DIR / "stock_monitor.json",
         (json.dumps(stock_monitor, ensure_ascii=False, indent=2) + "\n").encode("utf-8"),
     )
@@ -259,6 +263,7 @@ def main() -> None:
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
+<p><strong><a href="stock.html">TALPA — Контроль наявності (зручна сторінка)</a></strong></p>
 <p><a href="stock_monitor.json">stock_monitor.json (динаміка наявності)</a></p>
 <p><a href="kit_price_snapshot.json">kit_price_snapshot.json</a></p>
 <p><a href="kit_supply_resolver.json">kit_supply_resolver.json</a></p>
