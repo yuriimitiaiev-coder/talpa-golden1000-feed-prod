@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "scripts/stock_monitor.py"
+      - "scripts/stock_dashboard.py"
+      - "tests/test_stock_dashboard.py"
       - "tests/test_stock_monitor.py"
       - "scripts/build_pool_feed.py"
       - ".github/workflows/stock-monitor-check.yml"
@@ -21,3 +23,4 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --disable-pip-version-check -r requirements.txt
       - run: python -m unittest discover -s tests -p "test_stock_monitor.py" -v
+      - run: python -m unittest discover -s tests -p "test_stock_dashboard.py" -v
