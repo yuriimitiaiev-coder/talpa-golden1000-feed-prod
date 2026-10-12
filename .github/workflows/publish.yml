@@ -58,6 +58,7 @@ jobs:
           test -s docs/golden1000.xml
           test -s docs/status.json
           test -s docs/stock_monitor.json
+          test -s docs/stock.html
           test -s docs/kit_price_snapshot.json
           test -s docs/kit_supply_resolver.json
           test -s docs/sources/sigma_feed.xml.gz
@@ -85,6 +86,7 @@ jobs:
           assert status["free_slots"] == 1000 - len(pool), status
           assert len(status["sha256"]) == 64, status
           assert stock_monitor["schema_version"] == 1, stock_monitor
+          assert "Контроль наявності" in Path("docs/stock.html").read_text(encoding="utf-8")
           assert stock_monitor["totals"]["active"] == len(active), stock_monitor
           assert stock_monitor["totals"]["available"] + stock_monitor["totals"]["unavailable"] == len(active), stock_monitor
           assert status["sigma_feed_source"] in {"live", "published_snapshot"}, status
