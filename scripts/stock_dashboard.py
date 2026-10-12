@@ -68,6 +68,47 @@ h1{margin:0;font-size:clamp(26px,4vw,37px);letter-spacing:-.035em}h2{margin:0 0 
 @media(max-width:850px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 @media(max-width:520px){.top-inner{flex-direction:column;align-items:flex-start}.wrap{padding:24px 15px 45px}
  .kpi{padding:15px}.kpi .v{font-size:29px}.panel{padding:15px}}
+
+/* TALPA DMS corporate identity: graphite, yellow, white surfaces */
+:root{--ink:#20252b;--muted:#68717a;--line:#dfe3e7;--wash:#f3f4f6;
+ --paper:#fff;--teal:#20252b;--amber:#8a5d00}
+body::before{content:"";display:block;position:fixed;z-index:1000;top:0;left:0;right:0;height:5px;background:#f2bd18}
+a{color:#343b43}.top{background:#fff;color:#20252b;border-bottom:1px solid #dfe3e7}
+.top-inner{max-width:1200px;padding:23px 28px;gap:25px;flex-wrap:wrap}
+.brand-lockup{display:flex;align-items:center;gap:18px;min-width:0}
+.talpa-logo{width:220px;max-width:42vw;height:auto;display:block;object-fit:contain}
+.brand-caption{display:grid;gap:3px;border-left:2px solid #f2bd18;padding-left:18px;min-width:0}
+.brand-caption strong{font-size:18px;letter-spacing:.04em;font-weight:800}
+.brand-caption small{color:#68717a;font-size:11px;letter-spacing:.11em;font-weight:800}
+.top nav{gap:10px;align-items:center}
+.top a{display:inline-flex;padding:9px 12px;min-height:38px;align-items:center;
+ background:#f3f4f6;border:1px solid #dfe3e7;border-radius:9px;color:#20252b;
+ font-size:13px;font-weight:650}
+.top a:hover{background:#fff7d8;border-color:#e3c875;text-decoration:none}
+.top .dms-link{background:#20252b;border-bottom:3px solid #f2bd18;border-top:0;
+ border-left:0;border-right:0;color:#fff}
+.top .dms-link:hover{background:#111519;color:#fff}
+.wrap{max-width:1200px}
+h1{letter-spacing:-.028em}
+.kpi,.panel{border-color:#dfe3e7;border-radius:12px;box-shadow:0 3px 12px rgba(24,32,42,.025)}
+.kpi{border-top:3px solid #f2bd18}
+.kpi .v,.accent{color:#20252b}
+.data th{background:#f7f8f9;color:#5f6871}
+.data tbody tr:hover{background:#fffdf5}
+.pill{background:#eef1f4;color:#20252b}
+.pill.warn{background:#fff7d8;color:#8a5d00}
+.pill.neutral{background:#eef1f4;color:#525d69}
+.pill.good{background:#e9f6ef;color:#1c6b45}
+.pill.bad{background:#fbe9e9;color:#a12a2a}
+.meta .pill{background:#fff7d8;color:#6b5100;border:1px solid #ead98f}
+.alert{border-left-color:#f2bd18;background:#fffae8}
+.alert.info{background:#f7f8f9;border-left-color:#a7afb8}
+.footer{border-top:1px solid #dfe3e7;padding-top:18px}
+@media(max-width:850px){.top-inner{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){.talpa-logo{width:190px;max-width:66vw}
+ .brand-lockup{gap:11px}.brand-caption{padding-left:10px}
+ .brand-caption strong{font-size:15px}.top nav{gap:8px}}
+
 """
 PAGE = Template("""<!doctype html>
 <html lang="uk">
@@ -76,9 +117,14 @@ PAGE = Template("""<!doctype html>
 <style>$style</style></head>
 <body>
 <header class="top"><div class="top-inner">
-  <div class="brand">TALPA <span style="font-weight:400;letter-spacing:0;font-size:13px">/ Golden1000</span></div>
-  <nav><a href="./">← Головна</a><a href="stock_monitor.json">Журнал JSON</a>
-  <a href="golden1000.xml">XML-фід</a><a href="stock.html">Оновити сторінку ↻</a></nav>
+  <div class="brand-lockup">
+    <img class="talpa-logo" src="https://talpa-dms.long-wind-62a2.workers.dev/brand-logo.webp"
+      alt="TALPA INDUSTRIAL COMPONENTS">
+    <div class="brand-caption"><strong>КОНТРОЛЬ НАЯВНОСТІ</strong><small>GOLDEN1000 · МОНІТОРИНГ ПОСТАЧАЛЬНИКІВ</small></div>
+  </div>
+  <nav aria-label="Навігація"><a class="dms-link" href="https://talpa-dms.long-wind-62a2.workers.dev/" target="_blank" rel="noopener noreferrer">TALPA DMS ↗</a>
+  <a href="./">Golden1000</a><a href="stock_monitor.json">Дані JSON</a>
+  <a href="stock.html">Оновити ↻</a></nav>
 </div></header>
 <main class="wrap">
  <h1>Контроль наявності</h1>
