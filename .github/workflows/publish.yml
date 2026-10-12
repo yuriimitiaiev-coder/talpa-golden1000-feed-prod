@@ -57,6 +57,7 @@ jobs:
         run: |
           test -s docs/golden1000.xml
           test -s docs/status.json
+          test -s docs/stock_monitor.json
           test -s docs/kit_price_snapshot.json
           test -s docs/kit_supply_resolver.json
           test -s docs/sources/sigma_feed.xml.gz
@@ -70,6 +71,7 @@ jobs:
           from pool_common import load_pool
 
           status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
+          stock_monitor = json.loads(Path("docs/stock_monitor.json").read_text(encoding="utf-8"))
           snapshot = json.loads(Path("docs/kit_price_snapshot.json").read_text(encoding="utf-8"))
           resolver = json.loads(Path("docs/kit_supply_resolver.json").read_text(encoding="utf-8"))
           pool = load_pool()
@@ -82,6 +84,9 @@ jobs:
           assert status["pool_configured"] == len(pool), status
           assert status["free_slots"] == 1000 - len(pool), status
           assert len(status["sha256"]) == 64, status
+          assert stock_monitor["schema_version"] == 1, stock_monitor
+          assert stock_monitor["totals"]["active"] == len(active), stock_monitor
+          assert stock_monitor["totals"]["available"] + stock_monitor["totals"]["unavailable"] == len(active), stock_monitor
           assert status["sigma_feed_source"] in {"live", "published_snapshot"}, status
           assert status["sigma_feed_snapshot_bytes"] > 100000, status
           # Missing supplier SKUs are a health signal, not a reason to freeze stale inventory.

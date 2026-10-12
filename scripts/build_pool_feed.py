@@ -38,6 +38,7 @@ from pool_common import (
     supplier_offer_map,
 )
 from pool_builder import build_xml
+from stock_monitor import build_stock_monitor, fetch_previous_history
 
 
 def write_atomically(path, data: bytes) -> None:
@@ -183,6 +184,19 @@ def main() -> None:
     )
     validate_grand_output(xml_bytes)
 
+    old_history, history_loaded, history_warning = fetch_previous_history(PUBLISHED_FEED_URL)
+    stock_monitor = build_stock_monitor(
+        active_rows,
+        xml_bytes,
+        published_map,
+        metadata["generated_at_utc"],
+        sigma_feed_source=sigma_feed_source,
+        missing_supplier_skus=metadata["supplier_missing_active"],
+        history=old_history,
+        history_loaded=history_loaded,
+        history_warning=history_warning,
+    )
+
     metadata.update(
         {
             "pool_configured": len(pool),
@@ -200,6 +214,10 @@ def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     write_atomically(SIGMA_SNAPSHOT_PATH, sigma_snapshot_bytes)
     write_atomically(OUTPUT_XML, xml_bytes)
+    write_atomically(
+        OUTPUT_DIR / "stock_monitor.json",
+        (json.dumps(stock_monitor, ensure_ascii=False, indent=2) + "\n").encode("utf-8"),
+    )
     STATUS_JSON.write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -241,6 +259,7 @@ def main() -> None:
 <p>Оновлено UTC: {metadata['generated_at_utc']}</p>
 <p><a href="golden1000.xml">golden1000.xml</a></p>
 <p><a href="status.json">status.json</a></p>
+<p><a href="stock_monitor.json">stock_monitor.json (динаміка наявності)</a></p>
 <p><a href="kit_price_snapshot.json">kit_price_snapshot.json</a></p>
 <p><a href="kit_supply_resolver.json">kit_supply_resolver.json</a></p>
 </body>
