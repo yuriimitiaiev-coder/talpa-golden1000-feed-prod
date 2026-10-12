@@ -45,6 +45,15 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('<div class="v">3</div>', html)
         self.assertIn('<div class="v accent">2</div>', html)
 
+
+    def test_talpa_corporate_header(self):
+        html = render_dashboard(sample())
+        self.assertIn('class="talpa-logo"', html)
+        self.assertIn('background:#20252b', html)
+        self.assertIn('background:#f2bd18', html)
+        self.assertIn('href="https://talpa-dms.long-wind-62a2.workers.dev/"', html)
+        self.assertIn('rel="noopener noreferrer"', html)
+
     def test_escapes_untrusted_sku_and_alert_text(self):
         report = sample()
         report["by_supplier"]["ZAINSTRUMENTOM"]["to_unavailable"] = [
