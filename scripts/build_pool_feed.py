@@ -105,7 +105,21 @@ def mirror_sigma_media(sigma_map, active_rows, published_map) -> dict[str, int]:
 
     def fetch_one(item: tuple[str, tuple[str, str, Path]]) -> tuple[str, str, Path, bytes]:
         sku, (source_url, filename, target) = item
-        data = download(source_url, f"SIGMA image {sku} #1")
+        data = download(source_url, f"SIGMA image {sku} #1", optional=True)
+        if not data:
+            # A live SIGMA image can disappear (404). Preserve only the SAME SKU's
+            # previously published TALPA mirror; never emit a direct SIGMA URL.
+            previous = published_map.get(sku)
+            prior_picture = (
+                next(((p.text or "").strip() for p in previous.findall("picture") if (p.text or "").strip()), "")
+                if previous is not None else ""
+            )
+            if prior_picture.startswith(SIGMA_MEDIA_PUBLIC_BASE + "/") and prior_picture.endswith("/" + filename):
+                data = download(prior_picture, f"SIGMA preserved image {sku} #1", optional=True)
+                if data:
+                    print(f"WARNING: using previously published mirror for SIGMA image {sku}")
+        if not data:
+            fail(f"SIGMA image {sku} has neither a live picture nor a saved TALPA mirror")
         return sku, filename, target, data
 
     downloaded: dict[str, str] = {}
