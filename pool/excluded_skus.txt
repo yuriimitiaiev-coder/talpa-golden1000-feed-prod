@@ -247,3 +247,8 @@ FD-793
 1239800G5S
 8402421
 9449701
+
+# Replace three non-core unpublished RESERVE slots with Rollingdog finishing abrasives — 15.10.2026
+9783822
+4322071
+4375431
