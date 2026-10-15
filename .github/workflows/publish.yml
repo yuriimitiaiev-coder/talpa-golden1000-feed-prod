@@ -193,9 +193,11 @@ jobs:
               "9418541", "4328411", "1640061", "1640041",
           }
           wave2_old = {
-              "7012281", "4375431", "9783822", "4322071", "4016712",
-              "6003075", "9443481", "6003132", "9445411",
+              "7012281", "4016712", "6003075", "9443481",
+              "6003132", "9445411",
           }
+          # 15.10.2026: three unpublished RESERVE slots retired for Rollingdog.
+          wave2_retired_for_rollingdog = {"4375431", "9783822", "4322071"}
           wave2_retired_reserve = {
               "FD775-30", "605", "1107-0865", "1001-2434", "1001-2605",
               "30105", "1101-0200", "1008-0331", "FD-793",
@@ -210,8 +212,15 @@ jobs:
           for sku in wave2_old:
               assert sku not in codes, (sku, codes)
               assert any(r["sku"] == sku and r["status"] == "RESERVE" for r in pool), (sku, pool)
-          for sku in wave2_retired_reserve:
+          for sku in wave2_retired_reserve | wave2_retired_for_rollingdog:
               assert all(r["sku"] != sku for r in pool), (sku, pool)
+          # Three live supplier-fed abrasive sheets; inventory can change later.
+          for sku in {"81222", "81223", "81224"}:
+              assert sku in by_code, (sku, codes)
+              offer = by_code[sku]
+              assert (offer.findtext("name") or "").strip(), sku
+              assert (offer.findtext("price") or "").strip(), sku
+              assert offer.findall("picture"), sku
 
           # Tool-store refocus wave 3 — 10.10.2026:
           # replace 100 non-core bathroom/plumbing/chemistry/watering SKUs
