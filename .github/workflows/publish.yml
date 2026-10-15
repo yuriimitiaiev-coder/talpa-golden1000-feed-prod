@@ -103,9 +103,9 @@ jobs:
 
           # Controlled catalogue rotation 19.09.2026:
           # promote exact MASTER PLWP0110, demote redundant AQUATICA 9784281,
-          # and retire old RESERVE 9784284 while preserving 980/20/1000.
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          # and retire old RESERVE 9784284; current capacity is checked as 983/17/1000.
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           assert "PLWP0110" in codes, codes
           assert "9784281" not in codes, codes
@@ -115,8 +115,8 @@ jobs:
           # Commercial-only rotation 02.10.2026:
           # replace unavailable 3912021 / 6021781 with top-ranked live SIGMA
           # candidates 8217182 / 4010502. Retire legacy RESERVE 9784290 / 9784297.
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
           for sku in {"8217182", "4010502"}:
@@ -170,8 +170,8 @@ jobs:
               "FD775-30", "605", "1107-0865", "1001-2434", "1001-2605",
               "30105", "1101-0200", "1008-0331", "FD-793",
           }
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
           wave1_retired_later = {"9449701"}
@@ -200,8 +200,8 @@ jobs:
               "FD775-30", "605", "1107-0865", "1001-2434", "1001-2605",
               "30105", "1101-0200", "1008-0331", "FD-793",
           }
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
           for sku in wave2_new:
@@ -220,8 +220,8 @@ jobs:
           wave3_old = {"9680501", "9680502", "9680503", "9680507", "9680509", "9680511", "9680512", "9680516", "9680537", "9680538", "9680539", "9680541", "9680543", "9680545", "9680547", "9680548", "9680552", "9681101", "9681102", "9681103", "9681107", "9681109", "9681111", "9681116", "9681301", "9681302", "9681303", "9681307", "9681309", "9681311", "9681312", "9681316", "9681401", "9681402", "9681403", "9681407", "9681411", "9681416", "9687901", "9687902", "9687903", "9687907", "9687909", "9687911", "9687916", "9783825", "9783827", "9783829", "9783830", "9783831", "9783832", "9784282", "9784292", "9784293", "9784298", "9541203", "9541326", "9541356", "9541357", "9541358", "9541822", "9542321", "9542330", "9542331", "9543400", "9545500", "9545502", "9549249", "9549870", "9690635", "9691912", "9691913", "9791611", "9792020", "9792021", "9792022", "9793510", "9794225", "9794226", "9794255", "9842720", "9541106", "9691612", "9792010", "9792155", "9792160", "9792165", "9792175", "9792240", "9792260", "9792265", "9793511", "9793512", "9793513", "9793514", "9794230", "2033017351", "2122321414", "5011394", "5019075"}
           assert len(wave3_new) == 100, len(wave3_new)
           assert len(wave3_old) == 100, len(wave3_old)
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
           for sku in wave3_new:
@@ -239,8 +239,8 @@ jobs:
           wave4_old = {"6003701", "90155", "19894", "1001-1671", "1004-0064", "1008-0300", "1109-0877", "100744", "105970", "4322361", "4321842", "03-1-03-EN BDN", "29554", "1239600G5", "1239800G5S", "8402421", "9449701"}
           assert len(wave4_new) == 17, len(wave4_new)
           assert len(wave4_old) == 17, len(wave4_old)
-          assert status["active"] == 980, status
-          assert status["reserve_configured"] == 20, status
+          assert status["active"] == 983, status
+          assert status["reserve_configured"] == 17, status
           assert status["pool_configured"] == 1000, status
           by_code = {(o.findtext("vendorCode") or "").strip(): o for o in offers}
           for sku in wave4_new:
