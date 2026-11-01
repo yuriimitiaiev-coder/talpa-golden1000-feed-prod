@@ -258,7 +258,9 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         # Prefer the last published card so a supplier disappearance can be
         # propagated as unavailable without losing stable content (name/photo).
         previous = published_map.get(sku)
-        if previous is None and row["prom_offer_id"]:
+        # For a genuinely new SKU present in a supplier feed, retain full supplier
+        # content and photos. Controller fallback is ONLY for a missing source.
+        if previous is None and source is None and row["prom_offer_id"]:
             previous = build_controller_offer(row)
 
         if source is None:
