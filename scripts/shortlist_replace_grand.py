@@ -129,6 +129,25 @@ def main():
         group_items.sort(key=lambda x:(-x["score"],x["sku"]))
         for pick in group_items[:5]:
             print("GROUP_PICK="+json.dumps({k:v for k,v in pick.items() if k!="picture_url"},ensure_ascii=False))
+    # Commercial screen: clearly label margin assumptions as NOT verified.
+    # Source: TALPA historic scenario (Sigma 27%; Za brand 25–30%);
+    # 15.1% variable operating cost + 15 UAH per stand-alone order.
+    for supplier in ("SIGMA","ZAINSTRUMENTOM"):
+        by=defaultdict(list)
+        for r in records:
+            if r["supplier"]!=supplier or not r["prom_group_id"]:continue
+            if r["price_rrc"]<500 or r["price_rrc"]>4500:continue
+            name=r["name"].lower()
+            discount=(0.27 if supplier=="SIGMA" else (0.30 if "tajima" in name else 0.25))
+            estimated=round((discount-0.151)*r["price_rrc"]-15,2)
+            if estimated<40:continue
+            by[r["prom_group_id"]].append((estimated,r))
+        for cat,arr in sorted(by.items()):
+            arr.sort(key=lambda x:(-x[0],-x[1]["score"]))
+            for est,r in arr[:10]:
+                print("ECON_PICK="+json.dumps({"supplier":supplier,"sku":r["sku"],"price":r["price_rrc"],
+                    "estimated_net":est,"assumed_discount":(0.27 if supplier=="SIGMA" else (0.30 if "tajima" in r["name"].lower() else 0.25)),
+                    "group":cat,"name":r["name"],"qty":r["quantity"],"score":r["score"]},ensure_ascii=False))
     out=ROOT/"data"/"grand35_replacement_live_candidates.csv"
     cols=["supplier","sku","name","price_rrc","available","quantity","supplier_group_id","prom_group_id","picture_count","picture_url","category","score","group_verified"]
     with out.open("w",newline="",encoding="utf-8-sig") as f:
