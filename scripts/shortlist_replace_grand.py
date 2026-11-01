@@ -121,6 +121,14 @@ def main():
             if displayed>=TOP:break
             print("CANDIDATE="+json.dumps({k:v for k,v in r.items() if k!="picture_url"},ensure_ascii=False))
             displayed+=1
+    by_group=defaultdict(list)
+    for item in records:
+        if item["prom_group_id"]:
+            by_group[(item["supplier"],item["prom_group_id"])].append(item)
+    for key,group_items in sorted(by_group.items()):
+        group_items.sort(key=lambda x:(-x["score"],x["sku"]))
+        for pick in group_items[:5]:
+            print("GROUP_PICK="+json.dumps({k:v for k,v in pick.items() if k!="picture_url"},ensure_ascii=False))
     out=ROOT/"data"/"grand35_replacement_live_candidates.csv"
     cols=["supplier","sku","name","price_rrc","available","quantity","supplier_group_id","prom_group_id","picture_count","picture_url","category","score","group_verified"]
     with out.open("w",newline="",encoding="utf-8-sig") as f:
