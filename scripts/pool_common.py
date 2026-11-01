@@ -133,12 +133,20 @@ def load_status_overrides() -> dict[str, str]:
 
 
 def load_pool() -> list[dict[str, str]]:
-    files = sorted(POOL_DIR.glob("catalog_pool_*.csv"))
-    if not files:
-        fail(f"No catalog pool files in {POOL_DIR}")
+    # Golden980 is a separate approved catalog snapshot. The historical 983/17
+    # shards are retained for rollback but MUST NOT be mixed with this snapshot.
+    golden980 = os.environ.get("GOLDEN980_MODE", "").strip() == "1"
+    if golden980:
+        files = [ROOT / "data" / "golden980_production_candidate.csv"]
+        excluded = set()
+        overrides = {}
+    else:
+        files = sorted(POOL_DIR.glob("catalog_pool_*.csv"))
+        excluded = load_excluded_skus()
+        overrides = load_status_overrides()
+    if not files or any(not p.exists() for p in files):
+        fail("Golden980 pool file missing" if golden980 else f"No catalog pool files in {POOL_DIR}")
     required = {"sku", "supplier", "status", "prom_offer_id", "prom_group_id", "fallback_price"}
-    excluded = load_excluded_skus()
-    overrides = load_status_overrides()
     rows: list[dict[str, str]] = []
     seen: set[str] = set()
     for path in files:
@@ -171,6 +179,8 @@ def load_pool() -> list[dict[str, str]]:
         fail("Pool contains no ACTIVE products")
     if len(active) > MAX_CAPACITY:
         fail(f"ACTIVE count {len(active)} exceeds capacity {MAX_CAPACITY}")
+    if golden980 and (len(rows) != 980 or len(active) != 980):
+        fail(f"Golden980 expected 980 ACTIVE exactly, got pool={len(rows)} active={len(active)}")
     return rows
 
 
