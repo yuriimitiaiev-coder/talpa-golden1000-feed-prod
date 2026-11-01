@@ -52,6 +52,9 @@ def main(argv: list[str]) -> int:
         "current_active": len(active),
         "current_reserve": len(reserve),
         "current_pool": len(pool),
+        "configured_reserve": len(reserve),
+        "unconfigured_free_slots": 1000 - len(pool),
+        "reserve_capacity": 1000 - len(active),
         "unchanged_active": len(overlap),
         "approved_missing_from_active": sorted(master_set - active_set),
         "legacy_active_not_approved": sorted(active_set - master_set),
@@ -62,7 +65,7 @@ def main(argv: list[str]) -> int:
             not (r.get("prom_offer_id") or "").strip() for r in active
         ),
         "legacy_supplier_counts": dict(Counter(r["supplier"] for r in active)),
-        "safe_to_publish": active_set == master_set and len(reserve) == 20,
+        "safe_to_publish": active_set == master_set and len(active) == 980 and len(pool) <= 1000,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if not report["safe_to_publish"]:
