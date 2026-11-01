@@ -1,0 +1,250 @@
+action,sku,supplier,legacy_prom_offer_id,prom_uid,export_external_id,legacy_group_id,export_group_number,comment
+REMOVE_OLD_ACTIVE,2821042,SIGMA,3092,,,993,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063044,SIGMA,35647,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063064,SIGMA,37748,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063264,SIGMA,37757,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063864,SIGMA,37756,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5064064,SIGMA,37747,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5067344,SIGMA,35646,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5067364,SIGMA,37751,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5067764,SIGMA,24796,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5074084,SIGMA,38070,,,901,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5074184,SIGMA,38039,,,901,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5076314,SIGMA,33666,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5076324,SIGMA,33667,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5076554,SIGMA,33668,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5076614,SIGMA,33670,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5078144,SIGMA,35848,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5080624,SIGMA,38405,,,901,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5014245,SIGMA,29621,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5014275,SIGMA,29622,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5077305,SIGMA,33674,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5077315,SIGMA,33675,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5077325,SIGMA,33676,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5077555,SIGMA,33678,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5077605,SIGMA,33679,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,3717141,SIGMA,42388,,,998,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,4008411,SIGMA,14365,,,943,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,6001551,SIGMA,954,,,893,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,7015221,SIGMA,15526,,,896,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,10125_M1,ZAINSTRUMENTOM,10125_M1,,,1023,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,13620,ZAINSTRUMENTOM,13620,,,898,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,20101,ZAINSTRUMENTOM,20101,,,899,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,80531,ZAINSTRUMENTOM,80531,,,1114201641,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1001-1649,ZAINSTRUMENTOM,1001-1649,,,1114201641,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1001-1899,ZAINSTRUMENTOM,1001-1899,,,1114201641,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1101-1704,ZAINSTRUMENTOM,1101-1704,,,992,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1103-2029,ZAINSTRUMENTOM,1103-2029,,,983,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,4020631,SIGMA,,,,34489,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1104-0120,ZAINSTRUMENTOM,1104-0120,,,1139723342,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1104-2534,ZAINSTRUMENTOM,1104-2534,,,1139723190,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1110-1760,ZAINSTRUMENTOM,1110-1760,,,1114201846,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1111-1756,ZAINSTRUMENTOM,1111-1756,,,1114201846,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,1802-2044,ZAINSTRUMENTOM,1802-2044,,,992,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,107316,ZAINSTRUMENTOM,107316,,,983,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,108251,ZAINSTRUMENTOM,108251,,,1139723329,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,290,ZAINSTRUMENTOM,290,,,1139723190,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,S610,ZAINSTRUMENTOM,S610,,,1139723329,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,NAB7-S,ZAINSTRUMENTOM,NAB7-S,,,1019,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,FD775-60,ZAINSTRUMENTOM,FD775-60,,,898,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9719001,SIGMA,9719001,,,1037,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9719221,SIGMA,9719221,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9722161,SIGMA,9722161,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9722601,SIGMA,9722601,,,1037,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9730220,SIGMA,9730220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9731200,SIGMA,9731200,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9731220,SIGMA,9731220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9732220,SIGMA,9732220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9732300,SIGMA,9732300,,,1038,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9733220,SIGMA,9733220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9734210,SIGMA,9734210,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9734220,SIGMA,9734220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9734300,SIGMA,9734300,,,1038,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9737220,SIGMA,9737220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9738230,SIGMA,9738230,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9740200,SIGMA,9740200,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9740220,SIGMA,9740220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9749220,SIGMA,9749220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9750220,SIGMA,9750220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9751220,SIGMA,9751220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9755220,SIGMA,9755220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9777110,SIGMA,9777110,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9777220,SIGMA,9777220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9780200,SIGMA,9780200,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9623100,SIGMA,9623100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9626100,SIGMA,9626100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,BE-1D122C,SIGMA,BE-1D122C,,,1038,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063224,SIGMA,5063224,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5063854,SIGMA,5063854,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5066664,SIGMA,5066664,,,987,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5076304,SIGMA,5076304,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5078795,SIGMA,5078795,,,985,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9443401,SIGMA,,,,1051,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,3715321,SIGMA,3715321,,,899,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9804100,SIGMA,9804100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9804120,SIGMA,9804120,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9804130,SIGMA,9804130,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9804140,SIGMA,9804140,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9804150,SIGMA,9804150,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9807120,SIGMA,9807120,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9807130,SIGMA,9807130,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9807140,SIGMA,9807140,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9807220,SIGMA,9807220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9810100,SIGMA,9810100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9820131,SIGMA,9820131,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9840100,SIGMA,9840100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9840110,SIGMA,9840110,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9840140,SIGMA,9840140,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9840220,SIGMA,9840220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9843100,SIGMA,9843100,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9843110,SIGMA,9843110,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9843140,SIGMA,9843140,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9843220,SIGMA,9843220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9846220,SIGMA,9846220,,,1035,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9870120,SIGMA,9870120,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9870130,SIGMA,9870130,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9885120,SIGMA,9885120,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9885140,SIGMA,9885140,,,1036,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,10742,ZAINSTRUMENTOM,10742,,,1023,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9443631,SIGMA,,,,1051,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,15731,ZAINSTRUMENTOM,15731,,,1019,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,15804,ZAINSTRUMENTOM,15804,,,1019,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,16196,ZAINSTRUMENTOM,16196,,,1023,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,31483,ZAINSTRUMENTOM,31483,,,1114201846,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,140751393,ZAINSTRUMENTOM,140751393,,,1020,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9462211,SIGMA,9462211,,,1054,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9411001,SIGMA,,,,1050,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9417491,SIGMA,,,,1052,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9419311,SIGMA,9419311,,,1052,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9420611,SIGMA,,,,1052,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9446441,SIGMA,,,,1051,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,4316051,SIGMA,,,,1009,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,5012545,SIGMA,,,,984,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,4316081,SIGMA,,,,1009,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,6003055,SIGMA,,,,893,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9410911,SIGMA,,,,1050,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,4002912,SIGMA,,,,943,,Absent from approved Golden980
+REMOVE_OLD_ACTIVE,9418541,SIGMA,,,,1052,,Absent from approved Golden980
+ADD_APPROVED,3823051,UNRESOLVED,,3238857662,,,155057166,External ID blank - investigate matching before publishing
+ADD_APPROVED,4003021,UNRESOLVED,,3257930946,,,155057127,External ID blank - investigate matching before publishing
+ADD_APPROVED,4003011,UNRESOLVED,,3257930947,,,155057127,External ID blank - investigate matching before publishing
+ADD_APPROVED,3717131,UNRESOLVED,,3257930948,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,4344012,UNRESOLVED,,3257930949,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,4355012,UNRESOLVED,,3257930950,,,155057172,External ID blank - investigate matching before publishing
+ADD_APPROVED,4400251,UNRESOLVED,,3257930951,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,6010085,UNRESOLVED,,3257930952,,,155057126,External ID blank - investigate matching before publishing
+ADD_APPROVED,6010101,UNRESOLVED,,3257930953,,,155057126,External ID blank - investigate matching before publishing
+ADD_APPROVED,4242461,UNRESOLVED,,3257930954,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,4210701,UNRESOLVED,,3257930955,,,155057162,External ID blank - investigate matching before publishing
+ADD_APPROVED,4342331,UNRESOLVED,,3257930956,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,4400751,UNRESOLVED,,3257930957,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,4311101,UNRESOLVED,,3257930958,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,2621011,UNRESOLVED,,3257930959,,,155057167,External ID blank - investigate matching before publishing
+ADD_APPROVED,4372491,UNRESOLVED,,3257930960,,,155057133,External ID blank - investigate matching before publishing
+ADD_APPROVED,8222241,UNRESOLVED,,3257930961,,,155057164,External ID blank - investigate matching before publishing
+ADD_APPROVED,3727072,UNRESOLVED,,3257937452,,,155057118,External ID blank - investigate matching before publishing
+ADD_APPROVED,4357972,UNRESOLVED,,3257937453,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,2622062,UNRESOLVED,,3257937454,,,155057167,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050011,UNRESOLVED,,3257937455,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,4340121,UNRESOLVED,,3257937456,,,155057136,External ID blank - investigate matching before publishing
+ADD_APPROVED,4401522,UNRESOLVED,,3257937457,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,4372441,UNRESOLVED,,3257937458,,,155057134,External ID blank - investigate matching before publishing
+ADD_APPROVED,4311151,UNRESOLVED,,3257937459,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,4002161,UNRESOLVED,,3257937460,,,155057127,External ID blank - investigate matching before publishing
+ADD_APPROVED,6031011,UNRESOLVED,,3257937461,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6022191,UNRESOLVED,,3257937462,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,4340151,UNRESOLVED,,3257937463,,,155057136,External ID blank - investigate matching before publishing
+ADD_APPROVED,4401031,UNRESOLVED,,3257937464,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,2622011,UNRESOLVED,,3257937465,,,155057167,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050081,UNRESOLVED,,3257937466,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,4315051,UNRESOLVED,,3257937467,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,6049011,UNRESOLVED,,3257940676,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,4242481,UNRESOLVED,,3257940677,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,4242471,UNRESOLVED,,3257940678,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,3718545,UNRESOLVED,,3257940679,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,3717221,UNRESOLVED,,3257940680,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,4354091,UNRESOLVED,,3257940681,,,155057172,External ID blank - investigate matching before publishing
+ADD_APPROVED,4311351,UNRESOLVED,,3257940682,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,4316401,UNRESOLVED,,3257940683,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,4400821,UNRESOLVED,,3257940684,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,2621061,UNRESOLVED,,3257940685,,,155057167,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050365,UNRESOLVED,,3257940686,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,6030212,UNRESOLVED,,3257940687,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6022221,UNRESOLVED,,3257940688,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,4317311,UNRESOLVED,,3257940689,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,4243132,UNRESOLVED,,3257940690,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,6024271,UNRESOLVED,,3257940691,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,3822182,UNRESOLVED,,3257969744,,,155057166,External ID blank - investigate matching before publishing
+ADD_APPROVED,3822052,UNRESOLVED,,3257969745,,,155057166,External ID blank - investigate matching before publishing
+ADD_APPROVED,3832231,UNRESOLVED,,3257969746,,,155057166,External ID blank - investigate matching before publishing
+ADD_APPROVED,3923011,UNRESOLVED,,3257969747,,,155057123,External ID blank - investigate matching before publishing
+ADD_APPROVED,3923021,UNRESOLVED,,3257969748,,,155057123,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050355,UNRESOLVED,,3257969749,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050031,UNRESOLVED,,3257969750,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,4354071,UNRESOLVED,,3257969751,,,155057172,External ID blank - investigate matching before publishing
+ADD_APPROVED,4340181,UNRESOLVED,,3257969752,,,155057136,External ID blank - investigate matching before publishing
+ADD_APPROVED,4400741,UNRESOLVED,,3257969753,,,155057173,External ID blank - investigate matching before publishing
+ADD_APPROVED,2621051,UNRESOLVED,,3257969754,,,155057167,External ID blank - investigate matching before publishing
+ADD_APPROVED,6021321,UNRESOLVED,,3257969755,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6021751,UNRESOLVED,,3257969756,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050071,UNRESOLVED,,3257969757,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,6101051,UNRESOLVED,,3257969758,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6226241,UNRESOLVED,,3257969759,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6712011,UNRESOLVED,,3257974089,,,155057036,External ID blank - investigate matching before publishing
+ADD_APPROVED,6104021,UNRESOLVED,,3257974090,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,1512051,UNRESOLVED,,3257974091,,,155057196,External ID blank - investigate matching before publishing
+ADD_APPROVED,4331132,UNRESOLVED,,3257974092,,,155057169,External ID blank - investigate matching before publishing
+ADD_APPROVED,4333111,UNRESOLVED,,3257974093,,,155057174,External ID blank - investigate matching before publishing
+ADD_APPROVED,6227012,UNRESOLVED,,3257974094,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6225251,UNRESOLVED,,3257974095,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6050082,UNRESOLVED,,3257974096,,,155057130,External ID blank - investigate matching before publishing
+ADD_APPROVED,4342341,UNRESOLVED,,3257974097,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,4102421,UNRESOLVED,,3257974098,,,155057168,External ID blank - investigate matching before publishing
+ADD_APPROVED,4102681,UNRESOLVED,,3257974099,,,155057168,External ID blank - investigate matching before publishing
+ADD_APPROVED,8222221,UNRESOLVED,,3257974100,,,155057164,External ID blank - investigate matching before publishing
+ADD_APPROVED,4322051,UNRESOLVED,,3257974101,,,155057176,External ID blank - investigate matching before publishing
+ADD_APPROVED,4241361,UNRESOLVED,,3257974102,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,1800151,UNRESOLVED,,3257974103,,,155057183,External ID blank - investigate matching before publishing
+ADD_APPROVED,4326491,UNRESOLVED,,3257981913,,,155057184,External ID blank - investigate matching before publishing
+ADD_APPROVED,4353122,UNRESOLVED,,3258019500,,,155057172,External ID blank - investigate matching before publishing
+ADD_APPROVED,3712251,UNRESOLVED,,3258019501,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,4102761,UNRESOLVED,,3258019502,,,155057168,External ID blank - investigate matching before publishing
+ADD_APPROVED,4321121,UNRESOLVED,,3258019503,,,155057176,External ID blank - investigate matching before publishing
+ADD_APPROVED,4242451,UNRESOLVED,,3258019504,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,1512171,UNRESOLVED,,3258019505,,,155057196,External ID blank - investigate matching before publishing
+ADD_APPROVED,6712071,UNRESOLVED,,3258058129,,,155057036,External ID blank - investigate matching before publishing
+ADD_APPROVED,6732611,UNRESOLVED,,3258058130,,,155057139,External ID blank - investigate matching before publishing
+ADD_APPROVED,6104051,UNRESOLVED,,3258058131,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6222131,UNRESOLVED,,3258058132,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6220061,UNRESOLVED,,3258058133,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,6034081,UNRESOLVED,,3258058134,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6022211,UNRESOLVED,,3258058135,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6034051,UNRESOLVED,,3258058136,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,4326481,UNRESOLVED,,3258058137,,,155057184,External ID blank - investigate matching before publishing
+ADD_APPROVED,4331112,UNRESOLVED,,3258058138,,,155057169,External ID blank - investigate matching before publishing
+ADD_APPROVED,4331122,UNRESOLVED,,3258058139,,,155057169,External ID blank - investigate matching before publishing
+ADD_APPROVED,4340271,UNRESOLVED,,3258058140,,,155057136,External ID blank - investigate matching before publishing
+ADD_APPROVED,4344181,UNRESOLVED,,3258058141,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,3712201,UNRESOLVED,,3258058142,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,4102411,UNRESOLVED,,3258058143,,,155057168,External ID blank - investigate matching before publishing
+ADD_APPROVED,4321341,UNRESOLVED,,3258058144,,,155057176,External ID blank - investigate matching before publishing
+ADD_APPROVED,4352341,UNRESOLVED,,3259419139,,,155057172,External ID blank - investigate matching before publishing
+ADD_APPROVED,6034071,UNRESOLVED,,3259419140,,,155057128,External ID blank - investigate matching before publishing
+ADD_APPROVED,6101201,UNRESOLVED,,3259419141,,,155057046,External ID blank - investigate matching before publishing
+ADD_APPROVED,1513151,UNRESOLVED,,3259419142,,,155057196,External ID blank - investigate matching before publishing
+ADD_APPROVED,4314011,UNRESOLVED,,3259419143,,,155057175,External ID blank - investigate matching before publishing
+ADD_APPROVED,4371471,UNRESOLVED,,3259419144,,,155057134,External ID blank - investigate matching before publishing
+ADD_APPROVED,8223631,UNRESOLVED,,3259419145,,,155485200,External ID blank - investigate matching before publishing
+ADD_APPROVED,4342321,UNRESOLVED,,3259419146,,,155057171,External ID blank - investigate matching before publishing
+ADD_APPROVED,3717121,UNRESOLVED,,3259419147,,,155057165,External ID blank - investigate matching before publishing
+ADD_APPROVED,1811701,UNRESOLVED,,3259419148,,,155057193,External ID blank - investigate matching before publishing
+ADD_APPROVED,2821051,UNRESOLVED,,3259419149,,,155057160,External ID blank - investigate matching before publishing
+ADD_APPROVED,4404201,UNRESOLVED,,3259419150,,,155057182,External ID blank - investigate matching before publishing
+ADD_APPROVED,9014471,UNRESOLVED,,3259419151,,,155057191,External ID blank - investigate matching before publishing
+ADD_APPROVED,4321081,UNRESOLVED,,3259419152,,,155057176,External ID blank - investigate matching before publishing
+ADD_APPROVED,4243112,UNRESOLVED,,3259419153,,,155057161,External ID blank - investigate matching before publishing
+ADD_APPROVED,2904031,UNRESOLVED,,3259419154,,,155057178,External ID blank - investigate matching before publishing
+ADD_APPROVED,1510762,UNRESOLVED,,3259462375,,,155057196,External ID blank - investigate matching before publishing
+ADD_APPROVED,8223511,UNRESOLVED,,3259462376,,,155485200,External ID blank - investigate matching before publishing
+ADD_APPROVED,4331261,UNRESOLVED,,3259462377,,,155057169,External ID blank - investigate matching before publishing
+ADD_APPROVED,4354141,UNRESOLVED,,3259462378,,,155057172,External ID blank - investigate matching before publishing

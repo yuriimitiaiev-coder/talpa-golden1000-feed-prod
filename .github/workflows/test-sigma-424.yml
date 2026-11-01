@@ -32,42 +32,15 @@ jobs:
           GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
           SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_all_ua.php
           PUBLISHED_FEED_URL: https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml
+          GOLDEN980_MODE: "1"
+          GOLDEN980_RRP_AUDIT: "1"
           MAX_CAPACITY: "1000"
           MAX_MISSING_ACTIVE: "25"
           DOWNLOAD_TIMEOUT_SECONDS: "120"
         run: python scripts/build_pool_feed.py
 
-      - name: Validate pool safety
-        run: |
-          python - <<'PY'
-          import json
-          import sys
-          from pathlib import Path
-          from lxml import etree
+      - name: Validate approved Golden980 output
+        run: GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
 
-          sys.path.insert(0, str(Path("scripts").resolve()))
-          from pool_common import load_pool
-
-          pool = load_pool()
-          active = [r for r in pool if r["status"] == "ACTIVE"]
-          status = json.loads(Path("docs/status.json").read_text(encoding="utf-8"))
-
-          assert len(pool) <= 1000
-          assert len(active) <= 1000
-          assert status["offers"] == len(active)
-          assert status["active"] == len(active)
-          assert status["pool_configured"] == len(pool)
-          assert status["free_slots"] == 1000 - len(pool)
-          assert status["supplier_missing_count"] <= 25
-
-          root = etree.parse("docs/golden1000.xml").getroot()
-          offers = root.find("shop").find("offers").findall("offer")
-          codes = [(o.findtext("vendorCode") or "").strip() for o in offers]
-          expected = [r["sku"] for r in active]
-          assert codes == expected
-          assert len(set(codes)) == len(codes)
-          assert len({(o.get("id") or "").strip() for o in offers}) == len(offers)
-
-          print(json.dumps(status, ensure_ascii=False, indent=2))
-          print(f"Validated effective controlled pool: {len(active)} ACTIVE / {1000-len(pool)} free slots")
-          PY
+      - name: Unit-test supplier RRP policy
+        run: python -m unittest discover -s tests -p test_golden980_price_policy.py -v

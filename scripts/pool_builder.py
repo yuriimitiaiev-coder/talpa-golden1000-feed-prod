@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import os
 from datetime import datetime, timezone
 from lxml import etree
 
@@ -74,7 +75,8 @@ def normalized_price(source: etree._Element, sku: str) -> str:
 
 def effective_selling_price(source: etree._Element, row: dict[str, str]) -> str:
     sku = row["sku"]
-    if row["supplier"] in {"GRANDINSTRUMENT", "GPL"}:
+    # Golden980 uses supplier selling/RRP feed price for Grand; legacy retains rollback fallback.
+    if row["supplier"] == "GPL" or (row["supplier"] == "GRANDINSTRUMENT" and os.environ.get("GOLDEN980_MODE") != "1"):
         raw = row["fallback_price"].replace(",", ".").strip()
         try:
             value = float(raw)

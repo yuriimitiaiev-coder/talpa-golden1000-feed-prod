@@ -161,6 +161,9 @@ def main() -> None:
     za_promo_adjustments = normalize_zainstrumentom_promotions(za_map)
     teknosel_map = google_merchant_offer_map(download(TEKNOSEL_URL, "TEKNOSEL"), "TEKNOSEL")
     grand_map = supplier_offer_map(download(GRAND_URL, "Grand Instrument"), "Grand Instrument")
+    if os.environ.get("GOLDEN980_RRP_AUDIT") == "1":
+        from audit_grand_rrp import audit_grand_rrp
+        audit_grand_rrp(pool, grand_map)
     gpl_map = gpl_offer_map(download(GPL_URL, "GPL"), "GPL")
 
     source_maps = {
