@@ -40,7 +40,7 @@ jobs:
         run: python scripts/build_pool_feed.py
 
       - name: Validate approved Golden980 output
-        run: GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
+        run: GRAND35_STAGING=1 GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
 
       - name: Unit-test supplier RRP policy
         run: python -m unittest discover -s tests -p test_golden980_price_policy.py -v
