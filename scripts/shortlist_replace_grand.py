@@ -50,6 +50,30 @@ def main():
     for supplier,mp in categories.items():
         unique_group[supplier]={category:count.most_common(1)[0][0] for category,count in mp.items() if len(count)==1 and sum(count.values())>=1}
     print("CATEGORY_MAPPING_STATS="+json.dumps({s:{"native_categories":len(categories[s]),"unique_mappings":len(unique_group[s])}for s in lookups}))
+    # Check previously researched high-demand candidates against today's live feed.
+    previously_ranked = {
+      "ZAINSTRUMENTOM":["YT-3259","YT-81440","YT-3308","YT-82781","2-14-563",
+        "48081","YT-24095","140751330","YT-827790","YT-82787","YT-82036",
+        "102441","FO-4031","030-0474","10018202","P240W"],
+      "SIGMA":["4002912","9410911","9418541","6003055","9449701"],
+    }
+    for supplier, skus in previously_ranked.items():
+        for sku in skus:
+            src=lookups[supplier].get(sku)
+            if src is None:
+                report={"supplier":supplier,"sku":sku,"live":False}
+            else:
+                native=normalized(src.findtext("categoryId"))
+                report={"supplier":supplier,"sku":sku,"live":True,
+                    "available":src.get("available")=="true",
+                    "already_in_catalog":sku in existing_skus,
+                    "historically_excluded":sku in excluded,
+                    "price":to_price(src.findtext("price")),
+                    "quantity":normalized(src.findtext("quantity_in_stock")),
+                    "group":unique_group[supplier].get(native,""),
+                    "photos":len(src.findall("picture")),
+                    "name":normalized(src.findtext("name_ua") or src.findtext("name"))[:100]}
+            print("PRIOR_RANKED="+json.dumps(report,ensure_ascii=False))
     patterns=[
         ("consumables",r"(біт|насадк|свердл|бур\b|свердел|диск|круг\b|круги|шліф|абразив|лезо|ножівк|стяжк|клем|полотн|витратн|головк|коронк|біти\b|bit\b|drill)",10),
         ("hand_tools",r"(ключ\b|ключі|викрутк|рулетк|кусачк|плоскогуб|кліщ|щипц|молот|стамеск|рівень|рівн\b|кельм|шпател|пістолет|степлер|пилка|ножиці|ніж\b)",8),
