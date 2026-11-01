@@ -32,6 +32,8 @@ jobs:
           GPL_FEED_URL: ${{ secrets.GPL_FEED_URL }}
           SIGMA_FEED_URL: https://sigma.ua/bitrix/catalog_export/marketsigma_all_ua.php
           PUBLISHED_FEED_URL: https://yuriimitiaiev-coder.github.io/talpa-golden1000-feed-prod/golden1000.xml
+          GOLDEN980_MODE: "1"
+          GOLDEN980_RRP_AUDIT: "1"
           MAX_CAPACITY: "1000"
           MAX_MISSING_ACTIVE: "25"
           DOWNLOAD_TIMEOUT_SECONDS: "120"
