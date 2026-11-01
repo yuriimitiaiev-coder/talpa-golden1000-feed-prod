@@ -44,3 +44,13 @@ jobs:
 
       - name: Unit-test supplier RRP policy
         run: python -m unittest discover -s tests -p test_golden980_price_policy.py -v
+
+      - name: Build standalone 35-new-products import (PR artifact only)
+        run: python scripts/build_grand35_prom_import.py
+
+      - name: Attach one-time creation XML (not auto-import)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Golden980-v2-add35-ONLY
+          path: staging/grand35_add_35_only_PROM_IMPORT.xml
+          retention-days: 7
