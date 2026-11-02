@@ -34,3 +34,11 @@ Do NOT upload this workbook or private product-level financial data to public Gi
 5. **No production/prom imports, merge, SKU deletions or publication** until final SKU selection and ID plan PASS.
 
 Working financial assumptions are private. The 80 UAH threshold and other modeled costs are not fixed TALPA commercial policy; adjust them based on observed order/channel evidence.
+
+
+## Prom traffic evidence checkpoint — 02.11.2026
+- Verified full latest Prom export `export-products-01-11-26_15-51-04.xlsx`: this is a product catalog export containing 980 cards; it has **no per-SKU impressions, clicks, conversion, advertising spend, or campaign-channel outcomes**. Never mistake this file for a demand analytics export.
+- Searched connected Drive for recent performance data: only legacy `prosale_econom_26-07-2026.txt` and `prosale_econom_26-07-2026_2.txt` and an older ProSale commission audit, **not** a current item-level report. July 2026 figures cannot rank the November Golden980.
+- Next owner-provided evidence: Prom seller cabinet → **Аналітика** → choose last 90 days or longest available period → item-level **Детально за товарами** export (CSV/XLSX, if offered). Required: stable SKU or Prom UID, impressions, clicks, orders, turnover and advertising spend; distinguish per-click versus per-order campaigns when shown. A screenshot of analytics page is sufficient to guide navigation if export option is absent.
+- On arrival: merge by exact SKU (or stable UID→SKU via Prom export), exclude accidental duplicates, normalize exposure days, preserve "no impressions" distinctly from "has impressions but no orders". Protect all proven completed sales and evaluate after actual conversion/fees, not just historic theoretical margins.
+- **HOLD** remains in force on all active products, auto-feed, and draft PR merge. No further repeated commercial model worksheets are needed until fresh Prom analytics becomes available.
