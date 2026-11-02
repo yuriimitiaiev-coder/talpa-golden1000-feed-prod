@@ -65,7 +65,7 @@ jobs:
           test -s docs/kit_price_snapshot.json
           test -s docs/kit_supply_resolver.json
           test -s docs/sources/sigma_feed.xml.gz
-          GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
+          GRAND35_STAGING="${{ github.event_name == 'pull_request' && '1' || '0' }}" GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'

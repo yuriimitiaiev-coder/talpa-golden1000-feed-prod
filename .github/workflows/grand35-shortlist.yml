@@ -1,0 +1,36 @@
+name: Grand35 replacement candidates (READ ONLY)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/shortlist_replace_grand.py"
+      - ".github/workflows/grand35-shortlist.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  shortlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Find supplier-backed candidates (no production changes)
+        env:
+          GOLDEN980_MODE: "1"
+          ZAINSTRUMENTOM_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+          TOP_REPLACEMENT_CANDIDATES: "95"
+          DOWNLOAD_TIMEOUT_SECONDS: "120"
+        run: python scripts/shortlist_replace_grand.py
+      - name: Save research CSV (not an import file)
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden980-grand35-candidates
+          path: data/grand35_replacement_live_candidates.csv
+          retention-days: 5
