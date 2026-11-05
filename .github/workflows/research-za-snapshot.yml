@@ -1,0 +1,52 @@
+name: Research - ZaInstrumentom full catalog snapshot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Download and validate full supplier feed
+        env:
+          ZA_FEED_URL: ${{ secrets.ZAINSTRUMENTOM_FEED_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import gzip
+          import os
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from xml.etree import ElementTree as ET
+
+          url = os.getenv('ZA_FEED_URL', '')
+          if not url.startswith('https://'):
+              raise SystemExit('Supplier HTTPS feed secret is missing or invalid')
+          req = Request(url, headers={'User-Agent': 'TALPA-Catalog-Research/1.0'})
+          with urlopen(req, timeout=120) as response:
+              data = response.read(100_000_001)
+          if len(data) > 100_000_000 or len(data) < 500:
+              raise SystemExit('Unexpected feed size')
+          # Validate without logging supplier URL or customer data.
+          root = ET.fromstring(data)
+          offers = root.findall('.//offer')
+          if not offers:
+              raise SystemExit('Supplier XML contains no offer elements')
+          folder = Path('research')
+          folder.mkdir(exist_ok=True)
+          with gzip.open(folder / 'zainstrumentom_full.xml.gz', 'wb', compresslevel=9) as result:
+              result.write(data)
+          print(f'Snapshot validated: {len(offers)} supplier offers')
+          PY
+      - name: Upload private GitHub Actions research artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: za-full-catalog-research
+          path: research/zainstrumentom_full.xml.gz
+          retention-days: 3
+          if-no-files-found: error
