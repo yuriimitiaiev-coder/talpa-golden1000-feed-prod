@@ -10,19 +10,22 @@ from lxml import etree
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pool_common import load_pool
 root=Path(__file__).resolve().parents[1]
-with (root/"data/approved_golden980_2026-11-01.csv").open(newline="",encoding="utf-8") as f:
+with (root/"data/golden980_target_2026-11-10.csv").open(newline="",encoding="utf-8") as f:
     master=list(csv.DictReader(f))
 pool=load_pool()
 active=[r for r in pool if r["status"]=="ACTIVE"]
 assert len(master)==len(pool)==len(active)==980,"980 ACTIVE expected"
 assert len({r["sku"] for r in master})==980,"duplicate master SKU"
-assert Counter(r["supplier"] for r in active)=={"SIGMA":632,"ZAINSTRUMENTOM":313,"GRANDINSTRUMENT":35}
+assert Counter(r["supplier"] for r in active)=={"SIGMA":558,"ZAINSTRUMENTOM":422}
 assert len({r["prom_offer_id"] for r in active})==980
 approved={r["sku"]:r for r in master}
 assert {r["sku"] for r in active}==set(approved)
 for r in active:
-    assert r["prom_offer_id"]==(approved[r["sku"]]["external_id"] or approved[r["sku"]]["prom_uid"]),r["sku"]
+    assert r["prom_offer_id"]==approved[r["sku"]]["prom_offer_id"],r["sku"]
     assert r["prom_group_id"],r["sku"]
+    assert r["supplier"]==approved[r["sku"]]["supplier"],r["sku"]
+    assert r["prom_group_id"]==approved[r["sku"]]["prom_group_id"],r["sku"]
+    assert r["status"]=="ACTIVE",r["sku"]
 status=json.loads((root/"docs/status.json").read_text(encoding="utf-8"))
 stock=json.loads((root/"docs/stock_monitor.json").read_text(encoding="utf-8"))
 assert status["active"]==status["offers"]==980,status
