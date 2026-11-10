@@ -67,6 +67,16 @@ jobs:
           test -s docs/sources/sigma_feed.xml.gz
           GOLDEN980_MODE=1 python scripts/validate_golden980_output.py
 
+      - name: Export Golden980 candidate for PR-only Prom import checks
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden980-rotation18-candidate
+          path: |
+            docs/golden1000.xml
+            docs/status.json
+          retention-days: 3
+
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
