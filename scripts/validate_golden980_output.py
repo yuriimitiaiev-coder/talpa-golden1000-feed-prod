@@ -16,7 +16,7 @@ pool=load_pool()
 active=[r for r in pool if r["status"]=="ACTIVE"]
 assert len(master)==len(pool)==len(active)==980,"980 ACTIVE expected"
 assert len({r["sku"] for r in master})==980,"duplicate master SKU"
-assert Counter(r["supplier"] for r in active)=={"SIGMA":559,"ZAINSTRUMENTOM":421}
+assert Counter(r["supplier"] for r in active)=={"SIGMA":562,"ZAINSTRUMENTOM":418}
 assert len({r["prom_offer_id"] for r in active})==980
 approved={r["sku"]:r for r in master}
 assert {r["sku"] for r in active}==set(approved)
