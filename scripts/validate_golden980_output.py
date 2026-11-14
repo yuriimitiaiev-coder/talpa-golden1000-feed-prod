@@ -53,4 +53,19 @@ for offer in offers:
     assert price>0 and qty>=0,(sku,price,qty)
     if offer.get("available")=="false":
         assert qty==0,(sku,"unavailable must mean zero")
+# Golden980 November 2026 rotation: structural and preview safety gates.
+# All 34 additions must have name and photograph; a missing supplier source
+# cannot silently create a placeholder card that Prom would accept as a product.
+new_skus=set(["6010521","6049131","4008531","4242461","4372411","5022344","5021132","108021","4401642","2622011","1520161","205250-2К","4241361","4401522","6034081","12325","1811491","1811551","4102761","1301321","1513061","5022474","6022221","4102771","1919262","1922071","4372441","1513051","4009021","4102522","4100212","1186081","1918822","5024564"])
+assert new_skus.issubset(set(codes)),sorted(new_skus-set(codes))
+for offer in offers:
+    sku=(offer.findtext("vendorCode") or "").strip()
+    if sku in new_skus:
+        title=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+        pictures=[(p.text or "").strip() for p in offer.findall("picture") if (p.text or "").strip()]
+        assert title and title!=sku,(sku,"missing real supplier title")
+        assert pictures,(sku,"missing photograph")
+        # Initial PR test only: do not block scheduled updates when stock later falls to zero.
+        if __import__("os").environ.get("GITHUB_EVENT_NAME")=="pull_request":
+            assert offer.get("available")=="true" and float(offer.findtext("quantity_in_stock") or "0")>0,(sku,"not available for first publication")
 print(json.dumps({"result":"PASS","active":980,"reserve_capacity":20,"suppliers":dict(Counter(r["supplier"] for r in active))},ensure_ascii=False))
