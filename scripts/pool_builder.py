@@ -258,10 +258,13 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
         # Prefer the last published card so a supplier disappearance can be
         # propagated as unavailable without losing stable content (name/photo).
         previous = published_map.get(sku)
-        if previous is None and row["prom_offer_id"]:
-            previous = build_controller_offer(row)
+        is_new_structural = previous is None
 
         if source is None:
+            # Keep old safe behavior if a supplier SKU disappears: preserve
+            # published content, or use a minimal unavailable placeholder.
+            if previous is None and row["prom_offer_id"]:
+                previous = build_controller_offer(row)
             if previous is None:
                 fail(f"ACTIVE SKU {sku} is absent from supplier feed and has no fallback card")
             out = force_unavailable(previous)
@@ -270,8 +273,9 @@ def build_xml(active_rows, groups, published_map, sigma_map, za_map, teknosel_ma
             set_child_text(out, "vendorCode", sku)
             missing.append(sku)
         else:
-            is_new_structural = previous is None
             if is_new_structural:
+                # New catalog entries must carry source product content, not
+                # just price/name from a synthetic controller stub.
                 previous = build_new_structural_offer(source, row)
                 new_structural.append(sku)
             out = overlay_commercial(previous, source, row)

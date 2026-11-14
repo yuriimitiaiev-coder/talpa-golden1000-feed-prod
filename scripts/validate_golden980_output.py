@@ -16,7 +16,7 @@ pool=load_pool()
 active=[r for r in pool if r["status"]=="ACTIVE"]
 assert len(master)==len(pool)==len(active)==980,"980 ACTIVE expected"
 assert len({r["sku"] for r in master})==980,"duplicate master SKU"
-assert Counter(r["supplier"] for r in active)=={"SIGMA":559,"ZAINSTRUMENTOM":421}
+assert Counter(r["supplier"] for r in active)=={"SIGMA":560,"ZAINSTRUMENTOM":420}
 assert len({r["prom_offer_id"] for r in active})==980
 approved={r["sku"]:r for r in master}
 assert {r["sku"] for r in active}==set(approved)
@@ -53,4 +53,22 @@ for offer in offers:
     assert price>0 and qty>=0,(sku,price,qty)
     if offer.get("available")=="false":
         assert qty==0,(sku,"unavailable must mean zero")
+# New catalog entries must be complete and supplier-available at initial PR test.
+# After deployment, expected stock-outs must NOT block periodic price/stock updates.
+new_skus=set(["6010521","6049131","4008531","4242461","4372411","5022344","5021132","6022211","4401642","2622011","1520161","205250-2К","4241361","4401522","6034081","12325","1811491","1811551","4102761","1301321","1513061","5022474","6022221","4102771","1919262","1922071","4372441","1513051","4009021","4102522","4100212","1186081","1918822","5024564"])
+problems=[]
+for offer in offers:
+    sku=(offer.findtext("vendorCode") or "").strip()
+    if sku not in new_skus:
+        continue
+    title=(offer.findtext("name_ua") or offer.findtext("name") or "").strip()
+    pictures=[(p.text or "").strip() for p in offer.findall("picture") if (p.text or "").strip()]
+    if not title or title==sku:
+        problems.append((sku,"missing real supplier title"))
+    if not pictures:
+        problems.append((sku,"missing photograph"))
+    if __import__("os").environ.get("GITHUB_EVENT_NAME")=="pull_request":
+        if offer.get("available")!="true" or float(offer.findtext("quantity_in_stock") or "0")<=0:
+            problems.append((sku,"not available for first publication"))
+assert not problems,problems
 print(json.dumps({"result":"PASS","active":980,"reserve_capacity":20,"suppliers":dict(Counter(r["supplier"] for r in active))},ensure_ascii=False))

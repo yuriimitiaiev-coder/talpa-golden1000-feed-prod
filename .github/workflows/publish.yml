@@ -9,6 +9,8 @@ on:
     branches: [main]
     paths:
       - "pool/**"
+      - "data/golden980_target_*.csv"
+      - "data/golden980_production_candidate.csv"
       - "groups/**"
       - "scripts/**"
       - "sources/**"
