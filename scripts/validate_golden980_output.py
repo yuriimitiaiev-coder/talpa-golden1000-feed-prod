@@ -45,6 +45,17 @@ assert len(set(codes))==len(set(ids))==980
 assert codes==[r["sku"] for r in active],"offer SKUs do not match approved order"
 assert ids==[r["prom_offer_id"] for r in active],"offer id must preserve Prom external id"
 groups={r["sku"]:r["prom_group_id"] for r in active}
+for offer in offers:
+    sku=(offer.findtext("vendorCode") or "").strip()
+    assert (offer.findtext("categoryId") or "").strip()==groups[sku],sku
+    price=float((offer.findtext("price") or "0").replace(",","."))
+    qty=float((offer.findtext("quantity_in_stock") or "-1").replace(",","."))
+    assert price>0 and qty>=0,(sku,price,qty)
+    if offer.get("available")=="false":
+        assert qty==0,(sku,"unavailable must mean zero")
+# New catalog entries must be complete and supplier-available at initial PR test.
+# After deployment, expected stock-outs must NOT block periodic price/stock updates.
+new_skus=set(["6010521","6049131","4008531","4242461","4372411","5022344","5021132","6022211","4401642","2622011","1520161","205250-2К","4241361","4401522","6034081","12325","1811491","1811551","4102761","1301321","1513061","5022474","6022221","4102771","1919262","1922071","4372441","1513051","4009021","4102522","4100212","1186081","1918822","5024564"])
 problems=[]
 for offer in offers:
     sku=(offer.findtext("vendorCode") or "").strip()
@@ -56,7 +67,6 @@ for offer in offers:
         problems.append((sku,"missing real supplier title"))
     if not pictures:
         problems.append((sku,"missing photograph"))
-    # Stock check is only an initial PR gate: future 4-hour refreshes may show zero.
     if __import__("os").environ.get("GITHUB_EVENT_NAME")=="pull_request":
         if offer.get("available")!="true" or float(offer.findtext("quantity_in_stock") or "0")<=0:
             problems.append((sku,"not available for first publication"))
